@@ -6,7 +6,7 @@ module Bishop
     end
 
     def parse( file )
-      schema = Nokogiri::XML(File.open(options[:file]))      
+      schema = Nokogiri::XML(File.open(file))      
       types( schema )
     end
 

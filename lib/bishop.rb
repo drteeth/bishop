@@ -2,6 +2,7 @@ require 'nokogiri'
 require 'erb'
 require 'fileutils'
 require 'trollop'
+require "active_support"
 
 require 'bishop/args'
 require 'bishop/field'
