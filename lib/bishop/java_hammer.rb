@@ -1,7 +1,8 @@
 module Bishop
   class JavaHammer
 
-    def initialize(namespace)
+    def initialize(xsd_dir, namespace)
+      @xsd_dir = xsd_dir
       @namespace = namespace
       @primitives = %W( Boolean String int Integer long Long Date )
 
@@ -29,7 +30,7 @@ module Bishop
     end    
 
     def drop_on( type )
-      @template = ERB.new(File.read('../templates/content-provider.java.erb'))
+      @template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/content-provider.java.erb')))
 
       if type.name =~ /^ArrayOf/
         return

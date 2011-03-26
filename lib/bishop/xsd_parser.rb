@@ -9,6 +9,8 @@ module Bishop
     def parse(file,output_namespace)
       @doc = Nokogiri::XML(File.open(file))
       @out_ns = output_namespace
+      @xsd_dir = File.expand_path(File.dirname(file))
+      @hammer = JavaHammer.new(@xsd_dir,@out_ns)
       do_types
     end
 
@@ -34,9 +36,8 @@ module Bishop
           type.fields << field
 
         end
-
-        hammer = JavaHammer.new(@out_ns)
-        hammer.drop_on( type )
+        
+        @hammer.drop_on( type )
 
       end
     end
