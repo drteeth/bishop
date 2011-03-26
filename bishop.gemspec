@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.email       = ["ben@monkeyhouse.ca"]
   s.homepage    = ""
   s.summary     = %q{Generates Android ContentProviders from XML Schema.}
-  s.description = %q{Generates Android ContentProviders from XML Schema.}
+  s.description = %q{"The A2s always were a bit twitchy. That could never happen now with our behavioral inhibitors. It is impossible for me to harm or by omission of action, allow to be harmed, a human being."}
 
   s.rubyforge_project = "bishop"
   
