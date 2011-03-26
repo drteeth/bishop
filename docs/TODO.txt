@@ -1,0 +1,3 @@
+add pluralization (actionview?)
+add alternate types/convertions (ex: Date <=> Long via millis)
+or Integer <==> int
