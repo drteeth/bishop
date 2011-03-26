@@ -1,1 +1,6 @@
-com/
+*.gem
+.bundle
+Gemfile.lock
+pkg/*
+generated/*
+.DS_Store

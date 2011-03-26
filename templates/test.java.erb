@@ -1,0 +1,185 @@
+package <%= @namespace %>;
+
+import java.util.Date;
+import java.util.ArrayList;
+
+import android.content.ContentProvider;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.UriMatcher;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
+import android.net.Uri;
+import android.provider.BaseColumns;
+import android.text.TextUtils;
+
+public class <%= @type.name %>
+{
+	public <%= @type.name %>()
+	{}
+	
+	public static final String PROVIDER_NAME = "<%= @namespace %>.<%= @type.name %>";
+	public static final String DATABASE_TABLE = "<%= @type.pluralize.downcase %>";
+	public static final int ITEMS = 1;
+	public static final int ITEM_ID = 2;
+
+	public static final Uri CONTENT_URI = Uri.parse( "content://" + PROVIDER_NAME + "/<%= @type.name.downcase %>" );
+	public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.<%= @namespace %>.<%= @type.name.downcase %>";
+	public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.<%= @namespace %>.<%= @type.name.downcase %>";
+
+	private SQLiteDatabase demoDB;
+
+	private static final UriMatcher uriMatcher;
+
+	static
+	{
+		uriMatcher = new UriMatcher( UriMatcher.NO_MATCH );
+		uriMatcher.addURI( PROVIDER_NAME, <%= @type.name %>.DATABASE_TABLE, <%= @type.name %>.ITEMS );
+		uriMatcher.addURI( PROVIDER_NAME, <%= @type.name %>.DATABASE_TABLE + "/#", <%= @type.name %>.ITEM_ID );
+	}
+	
+	<% @type.fields.each do |f| %>
+	private <%= f.java_type %> m_<%= f.name %>;
+	<% end %>
+	
+	public static class Columns implements BaseColumns
+	{
+		<% @type.fields.each do |f| %>
+		public static final String <%= f.name.upcase %> = "<%= f.col_name %><%= f.is_primitive ? "" : "_id" %>";
+		<% end %>
+	}
+	
+	<% @type.fields.each do |f| %>
+	public <%= f.java_type %> get<%= f.name %>()
+	{
+		return m_<%= f.name.downcase %>;
+	}
+	
+	public void set<%= f.name %>( <%= f.java_type %> value )
+	{
+		m_<%= f.name.downcase %> = value;
+	}
+	<% end %>
+	
+	public static ContentValues getValues( <%= @type.name %> _<%= @type.name.downcase %> )
+	{
+		ContentValues values = new ContentValues();
+		
+		<% @type.primitive_fields.each do |f| %>
+		values.put( <%= @type.name %>.Columns.<%= f.name.upcase %>, _<%= @type.name.downcase %>.get<%= f.name %>() );
+		<% end %>
+		
+		return values;
+	}
+	
+	public static <%= @type.name %> getFromCursor( Cursor c )
+	{
+		<%= @type.name %> <%= @type.name.downcase %> = new <%= @type.name %>();
+		
+		<% @type.primitive_fields.each do |f| %>		
+		int <%= f.name.downcase %>ColumnIndex = c.getColumnIndex( <%= @type.name %>.Columns.<%= f.name.upcase %> );
+		<%= @type.name.downcase %>.set<%= f.name %>( c.get<%= f.java_type %>( <%= f.name.downcase %>ColumnIndex ) );		
+		<% end %>
+		
+		<% @type.complex_fields.each do |f| %>		
+		//<%= @type.name.downcase %>.set<%= f.name %>( c.get<%= f.java_type %>( columnIndex ) );
+		<% end %>
+		
+		return <%= @type.name.downcase %>;
+	}
+	
+	@Override
+		public int delete( Uri uri, String selection, String[] selectionArgs )
+		{
+			int count = 0;
+			switch( uriMatcher.match( uri ) )
+			{
+				case <%= @type.name %>.ITEMS:
+					count = demoDB.delete( <%= @type.name %>.DATABASE_TABLE, selection, selectionArgs );
+					break;
+				case <%= @type.name %>.ITEM_ID:
+					String id = uri.getPathSegments().get( 1 );
+					count = demoDB.delete( <%= @type.name %>.DATABASE_TABLE, <%= @type.name %>._ID + " = " + id
+							+ ( !TextUtils.isEmpty( selection ) ? " AND (" + selection + ')' : "" ), selectionArgs );
+					break;
+				default:
+					throw new IllegalArgumentException( "Unknown URI " + uri );
+			}
+			getContext().getContentResolver().notifyChange( uri, null );
+			return count;
+		}
+
+		@Override
+		public String getType( Uri uri )
+		{
+			switch( uriMatcher.match( uri ) )
+			{
+				case <%= @type.name %>.ITEMS:
+					return <%= @type.name %>.CONTENT_TYPE;
+				case <%= @type.name %>.ITEM_ID:
+					return <%= @type.name %>.CONTENT_ITEM_TYPE;
+				default:
+					throw new IllegalArgumentException( "Unsupported URI: " + uri );
+			}
+		}
+
+		@Override
+		public Uri insert( Uri uri, ContentValues values )
+		{
+			long rowID = demoDB.insert( <%= @type.name %>.DATABASE_TABLE, "", values );
+			if( rowID > 0 )
+			{
+				Uri _uri = ContentUris.withAppendedId( CONTENT_URI, rowID );
+				getContext().getContentResolver().notifyChange( _uri, null );
+				return _uri;
+			}
+
+			throw new UnsupportedOperationException( "shitball" );
+		}
+
+		@Override
+		public boolean onCreate()
+		{
+			Context context = getContext();
+			SQLiteConnectionManager dbHelper = new SQLiteConnectionManager( context );
+			demoDB = dbHelper.getWritableDatabase();
+			return ( demoDB == null ) ? false : true;
+		}
+
+		@Override
+		public Cursor query( Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder )
+		{
+			SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
+			sqlBuilder.setTables( <%= @type.name %>.DATABASE_TABLE );
+			if( uriMatcher.match( uri ) == <%= @type.name %>.ITEM_ID )
+				sqlBuilder.appendWhere( <%= @type.name %>._ID + " = " + uri.getPathSegments().get( 1 ) );
+			Cursor c = sqlBuilder.query( demoDB, projection, selection, selectionArgs, null, null, sortOrder );
+			c.setNotificationUri( getContext().getContentResolver(), uri );
+			return c;
+		}
+
+		@Override
+		public int update( Uri uri, ContentValues values, String selection, String[] selectionArgs )
+		{
+			int count = 0;
+			switch( uriMatcher.match( uri ) )
+			{
+				case <%= @type.name %>.ITEMS:
+					count = demoDB.update( <%= @type.name %>.DATABASE_TABLE, values, selection, selectionArgs );
+					break;
+
+				case <%= @type.name %>.ITEM_ID:
+					count = demoDB.update( <%= @type.name %>.DATABASE_TABLE, values, <%= @type.name %>._ID + " = " + uri.getPathSegments().get( 1 )
+							+ ( !TextUtils.isEmpty( selection ) ? " AND (" + selection + ')' : "" ), selectionArgs );
+					break;
+				default:
+					throw new IllegalArgumentException( "Unknown URI " + uri );
+			}
+			getContext().getContentResolver().notifyChange( uri, null );
+
+			return count;
+		}
+	
+}
