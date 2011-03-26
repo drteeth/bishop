@@ -2,7 +2,7 @@ require 'nokogiri'
 require 'erb'
 require 'fileutils'
 
-require 'sxual/args'
+require 'bishop/args'
 require 'bishop/field'
 require 'bishop/type'
 require 'bishop/xsd_parser'
