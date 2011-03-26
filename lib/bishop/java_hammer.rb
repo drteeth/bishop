@@ -1,9 +1,10 @@
 module Bishop
   class JavaHammer
 
-    def initialize(xsd_dir, namespace)
-      @xsd_dir = xsd_dir
-      @namespace = namespace
+    def initialize(options)
+      @xsd_dir = options[:xsd_dir]
+      @namespace = options[:package]
+      @output_folder = options[:output]
       @primitives = %W( Boolean String int Integer long Long Date )
 
       @map = 
@@ -40,7 +41,7 @@ module Bishop
       v = @template.result(get_binding)
 
       path = @namespace.gsub('.','/')
-      dir = "./generated/#{path}/"
+      dir = "#{@output_folder}#{path}/"
 
       FileUtils.mkdir_p dir
 

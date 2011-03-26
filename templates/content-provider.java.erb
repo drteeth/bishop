@@ -68,9 +68,8 @@ public class <%= @type.name %> extends ContentProvider
 	{
 		<%= @type.name %> <%= @type.name.downcase %> = new <%= @type.name %>();
 		
-		<% @type.primitive_fields.each do |f| %>		
-		int <%= f.name.downcase %>ColumnIndex = c.getColumnIndex( <%= @type.name %>.Columns.<%= f.name.upcase %> );
-		<%= @type.name.downcase %>.<%= f.name %> = c.get<%= f.java_type.capitalize %>( <%= f.name.downcase %>ColumnIndex ) ;
+		<% @type.primitive_fields.each do |f| %>
+		<%= @type.name.downcase %>.<%= f.name %> = c.get<%= f.java_type.capitalize %>( c.getColumnIndex( <%= @type.name %>.Columns.<%= f.name.upcase %> ) ;
 		<% end %>
 		
 		<% @type.complex_fields.each do |f| %>		
