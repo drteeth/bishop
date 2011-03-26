@@ -13,7 +13,7 @@ module Bishop
       @options[key.to_sym]
     end
     
-    def options
+    def to_options
       @options
     end
     
