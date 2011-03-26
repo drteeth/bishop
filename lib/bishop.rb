@@ -1,6 +1,7 @@
 require 'nokogiri'
 require 'erb'
 require 'fileutils'
+require 'trollop'
 
 require 'bishop/args'
 require 'bishop/field'
@@ -17,12 +18,12 @@ module Bishop
       args.parse
 
       if ! args.set? :file
-        puts "usage: bishop -f <xsd>"
+        puts "usage: bishop -f <xsd> <package>"
         exit(-1)
       end
       
       h = XsdParser.new
-      h.parse(args.value(:file), "com.indusblue.providers")
+      h.parse(args.value(:file), args.value(:package))
     end
   end
 end

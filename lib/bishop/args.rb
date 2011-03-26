@@ -15,8 +15,8 @@ module Bishop
     
     def parse
       opts = Trollop::options do
-        opt :file, ".sqs file to load", :type => :string
-        opt :walker, "which tree walker to use", :type => :string, :default => "DefaultWalker"
+        opt :file, ".xsd file to load", :type => :string
+        opt :package, "java output package (com.example.providers)", :type => :string, :default => "com.example.providers"
       end
 
       @options = opts
