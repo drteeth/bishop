@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require 'bishop'
+
+app = Bishop::Application.new
+app.run()

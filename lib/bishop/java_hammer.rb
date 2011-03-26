@@ -29,7 +29,7 @@ module Bishop
     end    
 
     def drop_on( type )
-      @template = ERB.new(File.read('content-provider.java.erb'))
+      @template = ERB.new(File.read('../templates/content-provider.java.erb'))
 
       if type.name =~ /^ArrayOf/
         return
@@ -39,7 +39,7 @@ module Bishop
       v = @template.result(get_binding)
 
       path = @namespace.gsub('.','/')
-      dir = "./#{path}/"
+      dir = "./generated/#{path}/"
 
       FileUtils.mkdir_p dir
 
