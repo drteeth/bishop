@@ -2,24 +2,31 @@ module Bishop
   class XsdParser
 
     def initialize
-      @tns = "http://appserver.canada.com/SouthPARC/"
       @xs = "http://www.w3.org/2001/XMLSchema"
     end
 
-    def parse(file, java_namespace)
-      @doc = Nokogiri::XML(File.open(file))
-      @java_ns = java_namespace
-      @hammer = JavaHammer.new(@java_ns)
-      
-      do_types
+    def parse( file )
+      schema = Nokogiri::XML(File.open(file))      
+      types( schema )
     end
 
-    def do_types
-      complexTypes = @doc.xpath("//xs:complexType", 'xs' => @xs )
-
-      complexTypes.each do |complex_type|
-        type = Type.new(complex_type, @xs)        
-        @hammer.drop_on(type)
+    def types( schema )
+      schema.xpath("//xs:complexType", 'xs' => @xs ).map do |t|
+        {
+          :name => t['name'],
+          :fields => fields(t),
+        }
+      end
+    end
+    
+    def fields( type_node )
+      type_node.xpath("xs:sequence/xs:element", 'xs' => @xs ).map do |f|
+        {
+          :name => f['name'],
+          :type => f['type'],
+          :minOccurs => f['minOccurs'],
+          :nillable => f['nillable'],
+        }
       end
     end
   end

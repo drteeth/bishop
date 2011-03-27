@@ -5,8 +5,8 @@ require 'trollop'
 require 'active_support/inflector'
 
 require 'bishop/args'
-require 'bishop/field'
-require 'bishop/type'
+require 'bishop/java_field'
+require 'bishop/java_class'
 require 'bishop/xsd_parser'
 require 'bishop/pattern'
 require 'bishop/pattern_map'
@@ -26,7 +26,10 @@ module Bishop
       end
       
       h = XsdParser.new
-      h.parse(args.value(:file), args.value(:package))
+      xsd_types = h.parse(args.value(:file))
+
+      java_generator = JavaHammer.new( args.to_options )
+      java_generator.generate( xsd_types )
     end
   end
 end

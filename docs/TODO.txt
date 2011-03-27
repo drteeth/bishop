@@ -1,3 +1,7 @@
 add pluralization (actionview?)
-add alternate types/convertions (ex: Date <=> Long via millis)
+add alternate types/convertions (ex: Date <=> Integer via millis)
 or Integer <==> int
+implement a convert to primitive method? Date is the only non primitive so far...
+
+
+add a cli argument for output path.
