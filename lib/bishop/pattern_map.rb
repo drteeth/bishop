@@ -27,7 +27,9 @@ module Bishop
       puts "replace: #{namespace}:#{typeName}"
       @patterns[namespace.to_sym].each do |matcher|
         if typeName =~ matcher.pattern
-          return matcher.substitute($1)
+          val = matcher.substitute($1)
+          puts "replaced with: #{val}"
+          return val
         end
       end
       puts "returning nil for replace #{namespace}:#{typeName}"
