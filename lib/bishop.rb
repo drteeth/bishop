@@ -19,7 +19,7 @@ module Bishop
       args = Args.new
       args.parse
 
-      if ! args.set? :file
+      unless args.set?(:file)
         puts "usage: bishop -f <xsd> -p <package>"
         exit(-1)
       end
