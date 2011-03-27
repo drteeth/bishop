@@ -61,7 +61,7 @@ module Bishop
 
     def create_id_field()
       # add ID field
-      id = JavaField.new( "_ID " )
+      id = JavaField.new( "_ID" )
       id.type = "Integer"
       id.minOccurs = "1";
       id.nillable = "false"

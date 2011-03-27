@@ -22,12 +22,12 @@ public class <%= @type.class_name %> extends ContentProvider
 	public <%= @type.name %>() 
 	{}
 	
-	public static final String PROVIDER_NAME = "<%= @namespace %>.<%= @type.name %>";
+	public static final String AUTHORITY = "<%= @namespace %>.<%= @type.name %>";
 	public static final String DATABASE_TABLE = "<%= @type.pluralize.downcase %>";
 	public static final int ITEMS = 1;
 	public static final int ITEM_ID = 2;
 
-	public static final Uri CONTENT_URI = Uri.parse( "content://" + PROVIDER_NAME + "/<%= @type.names.downcase %>" );
+	public static final Uri CONTENT_URI = Uri.parse( "content://" + AUTHORITY + "/<%= @type.names.downcase %>" );
 	
 	// these should be vnd.com.example.typename (just the base package, lower case singular type name)
 	public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.<%= @namespace %>.<%= @type.name.downcase %>";
@@ -43,8 +43,8 @@ public class <%= @type.class_name %> extends ContentProvider
 	static
 	{
 		uriMatcher = new UriMatcher( UriMatcher.NO_MATCH );
-		uriMatcher.addURI( PROVIDER_NAME, <%= @type.name %>.DATABASE_TABLE, <%= @type.name %>.ITEMS );
-		uriMatcher.addURI( PROVIDER_NAME, <%= @type.name %>.DATABASE_TABLE + "/#", <%= @type.name %>.ITEM_ID );
+		uriMatcher.addURI( AUTHORITY, <%= @type.name %>.DATABASE_TABLE, <%= @type.name %>.ITEMS );
+		uriMatcher.addURI( AUTHORITY, <%= @type.name %>.DATABASE_TABLE + "/#", <%= @type.name %>.ITEM_ID );
 	}
 	
 	<% @type.fields.each do |f| %>
@@ -63,7 +63,7 @@ public class <%= @type.class_name %> extends ContentProvider
 		ContentValues values = new ContentValues();
 		
 		<% @type.primitive_fields.each do |f| %>
-		values.put( <%= @type.name %>.Columns.<%= f.name.upcase %>, _<%= @type.name.downcase %>.<%= f.name %> );
+		values.put( <%= @type.name %>.Columns.<%= f.name.upcase %>, <%= f.convert_to_primitive( "_#{@type.name.downcase}.#{f.name}" ) %> );
 		<% end %>
 		
 		return values;
@@ -74,7 +74,8 @@ public class <%= @type.class_name %> extends ContentProvider
 		<%= @type.name %> <%= @type.name.downcase %> = new <%= @type.name %>();
 		
 		<% @type.primitive_fields.each do |f| %>
-		<%= @type.name.downcase %>.<%= f.name %> = c.get<%= f.type.capitalize %>( c.getColumnIndex( <%= @type.name %>.Columns.<%= f.name.upcase %> ) );
+		<%= "#{f.get_primitive_substitute}  _#{f.name.downcase} = c.get#{f.get_primitive_substitute.capitalize}( c.getColumnIndex( #{@type.name}.Columns.#{f.name.upcase} ) );" %>
+		<%= @type.name.downcase %>.<%= f.name %> = <%= f.upcast( "_#{f.name.downcase}" ) %>;
 		<% end %>
 		
 		<% @type.complex_fields.each do |f| %>		
@@ -181,18 +182,20 @@ public class <%= @type.class_name %> extends ContentProvider
 
 		private static final String DATABASENAME = "todo.db";
 		private static final int DATABASE_VERSION = 1;
-		private static final String CREATE_USERINFO = "CREATE TABLE <%= @type.name.downcase %>( _id INTEGER NOT NULL CONSTRAINT USER_PK PRIMARY KEY AUTOINCREMENT <%= @type.primitive_fields.reject{ |f| f.name == "_id" }.map{ |f| "#{f.col_name} #{f.sql_type}" }.join(', ') %> )";
+		private static final String CREATE_TABLE = "CREATE TABLE <%= @type.name.pluralize.downcase %>( _id INTEGER NOT NULL CONSTRAINT USER_PK PRIMARY KEY AUTOINCREMENT, <%= @type.primitive_fields.reject{ |f| f.name == '_ID' }.map{ |f| "#{f.col_name} #{f.sql_type}" }.join(', ') %> )";
 
 		public SQLiteConnectionManager( Context context )
 		{
 			super( context, DATABASENAME, null, DATABASE_VERSION );
 		}
+		
 		@Override
 		public void onCreate( SQLiteDatabase db )
 		{
-			db.execSQL( CREATE_USERINFO );
+			db.execSQL( CREATE_TABLE );
 			Log.d( "@G SQLConnectionFactory", " CREATE_LEADSOURCE Table " );
 		}
+		
 		@Override
 		public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion )
 		{

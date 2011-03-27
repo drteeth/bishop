@@ -17,9 +17,10 @@ module Bishop
       @patterns[:sql] = []
       @patterns[:sql] << Pattern.new(/String/, "Text")
 
-      @patterns[:java] = []
-      @patterns[:java] << Pattern.new(/getInteger/, "getInt")
-      @patterns[:java] << Pattern.new(/getBoolean/, "getInt")
+      @patterns[:java_primitives] = []
+      @patterns[:java_primitives] << Pattern.new(/Integer/, "int")
+      @patterns[:java_primitives] << Pattern.new(/Boolean/, "String")
+      @patterns[:java_primitives] << Pattern.new(/Date/, "long")
     end
 
     def replace(namespace, typeName)
