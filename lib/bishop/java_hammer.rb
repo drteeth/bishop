@@ -11,7 +11,7 @@ module Bishop
 
     def generate( xsd_types )
       xsd_types.each do |xsd_type|
-        next if type.name =~ /^ArrayOf/
+        next if xsd_type[:name] =~ /^ArrayOf/
         
         puts xsd_type[:name]
         
