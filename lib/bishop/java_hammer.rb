@@ -1,8 +1,8 @@
 module Bishop
   class JavaHammer
 
-    def initialize(xsd_dir, namespace)
-      @xsd_dir = xsd_dir
+    def initialize(namespace)
+      # @xsd_dir = xsd_dir
       @namespace = namespace
       @primitives = %w( Boolean String int Integer long Long Date )
 
