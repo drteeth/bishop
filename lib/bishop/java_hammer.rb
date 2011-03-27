@@ -73,7 +73,7 @@ module Bishop
 
     def swap_type( qualifiedTypeName )
       puts '-' * 70
-      puts "swap_type(#{java_type})"
+      puts "swap_type(#{qualifiedTypeName})"
       ns, typeName = qualifiedTypeName.split(':')
       puts "ns: #{ns} : #{typeName}"
       @pattern_map.replace(ns, typeName)
