@@ -4,38 +4,36 @@ module Bishop
     def initialize(xsd_dir, namespace)
       @xsd_dir = xsd_dir
       @namespace = namespace
-      @primitives = %W( Boolean String int Integer long Long Date )
+      @primitives = %w( Boolean String int Integer long Long Date )
 
-      @map = 
-      {
-        'tns' => 
-        [
-          { :pattern => /ArrayOf([a-zA-Z]+)/, :substition => "ArrayList<%s>" },
-          { :pattern => /(\w+)/,  :substition => "%s" }, 
-        ],
-        'xs' =>
-        [
-          { :pattern => /boolean/, :substition => "Boolean" },
-          { :pattern => /string/, :substition => "String" },
-          { :pattern => /int/, :substition => "Integer" },
-          { :pattern => /dateTime/, :substition => "Date" },
-          { :pattern => /anyURI/, :substition => "String" },
-        ],
-      }
+      @pattern_map = PatternMap.new
+      # @map = 
+      # {
+      #   'tns' => 
+      #   [
+      #     { :pattern => /ArrayOf([a-zA-Z]+)/, :substition => "ArrayList<%s>" },
+      #     { :pattern => /(\w+)/,  :substition => "%s" }, 
+      #   ],
+      #   'xs' =>
+      #   [
+      #     { :pattern => /boolean/, :substition => "Boolean" },
+      #     { :pattern => /string/, :substition => "String" },
+      #     { :pattern => /int/, :substition => "Integer" },
+      #     { :pattern => /dateTime/, :substition => "Date" },
+      #     { :pattern => /anyURI/, :substition => "String" },
+      #   ],
+      # }
 
-      @sql_map = {
-        "String" => "Text"
-      }
+      # @sql_map = {
+      #   "String" => "Text"
+      # }
 
     end    
 
     def drop_on( type )
+      return if type.name =~ /^ArrayOf/
+      
       @template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/content-provider.java.erb')))
-
-      if type.name =~ /^ArrayOf/
-        return
-      end
-
       @type = generate_class(type)
       v = @template.result(get_binding)
 
@@ -47,7 +45,6 @@ module Bishop
       File.open("#{dir}#{@type.name}.java",'w') do |f|
         f.write(v);
       end
-
     end
 
     def generate_class( type )
@@ -55,7 +52,7 @@ module Bishop
       type.fields.each do |f|
         f.java_type = swap_type(f.type)
         f.col_name = f.name.downcase
-        f.is_primitive = is_primitive_type f.java_type
+        f.is_primitive = primitive_type? f.java_type
         f.sql_type = get_sql_type( f.java_type )
       end
 
@@ -70,14 +67,14 @@ module Bishop
       id.col_name = "_id"
       type.fields << id
 
-      type.primitive_fields = type.fields.reject { |f| (is_primitive_type( f.java_type )==false) }
-      type.complex_fields = type.fields.reject { |f| is_primitive_type( f.java_type ) }
+      type.primitive_fields = type.fields.reject { |f| (primitive_type?( f.java_type )==false) }
+      type.complex_fields = type.fields.reject { |f| primitive_type?( f.java_type ) }
 
       type
 
     end
 
-    def is_primitive_type( typeName )
+    def primitive_type?( typeName )
       @primitives.include?( typeName )
     end
 
@@ -86,25 +83,28 @@ module Bishop
     end
 
     def get_sql_type( java_type )
-
-      @sql_map[java_type] || java_type
-
+      # @sql_map[java_type] || java_type
+      @pattern_map.replace(:sql, java_type) || java_type
     end
 
     def swap_type( qualifiedTypeName )
       ns, typeName = qualifiedTypeName.split(':')
 
-      javaTypeName = nil
-      @map[ns].each do |matcher|
-        if typeName =~ matcher[:pattern]
-          javaTypeName = (matcher[:substition] % $1 ) || matcher[:substition]
-          break
-        end
-      end
+      @pattern_map.replace(ns, typeName)
+      #javaTypeName = nil
+
+      # for each pattern in the namespace
+      # @map[ns].each do |matcher|
+      #   if typeName =~ matcher[:pattern]
+      #     # javaTypeName = (matcher[:substition] % $1 ) || matcher[:substition]
+      #     javaTypeName = matcher[:substition] % $1
+      #     break
+      #   end
+      # end
 
       #puts "\t\t#{javaTypeName}"
 
-      javaTypeName
+      #javaTypeName
     end
 
     def get_binding

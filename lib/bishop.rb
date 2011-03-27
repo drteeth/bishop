@@ -7,6 +7,8 @@ require 'bishop/args'
 require 'bishop/field'
 require 'bishop/type'
 require 'bishop/xsd_parser'
+require 'bishop/pattern'
+require 'bishop/pattern_map'
 require 'bishop/java_hammer'
 
 module Bishop
