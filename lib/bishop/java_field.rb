@@ -8,7 +8,7 @@ module Bishop
     end
 
     def pluralize
-      "#{name}s"
+      ActiveSupport::Inflector.pluralize( name )
     end
     
     def col_name
