@@ -13,7 +13,7 @@ module Bishop
       if @action == :interpolate
         @substitition % value
       else
-        value
+        @substitition
       end
     end
   end
