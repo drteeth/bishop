@@ -49,9 +49,9 @@ module Bishop
         'nillable' => "false"
       })
       
-      id.is_primitive = true
-      id.java_type = "int"
-      id.col_name = "_id"
+      field.is_primitive = true
+      field.java_type = "int"
+      field.col_name = "_id"
 
       field
     end
