@@ -4,8 +4,8 @@ module Bishop
       @patterns = {}
 
       @patterns[:tns] = []
-      @patterns[:tns] << Pattern.new(/ArrayOf([a-zA-Z]+)/, "ArrayList<%s>")
-      @patterns[:tns] << Pattern.new(/(\w+)/, "%s")
+      @patterns[:tns] << Pattern.new(/ArrayOf([a-zA-Z]+)/, "ArrayList<%s>", :interpolate)
+      @patterns[:tns] << Pattern.new(/(\w+)/, "%s", :interplolate)
 
       @patterns[:xs] = []
       @patterns[:xs] << Pattern.new(/boolean/, "Boolean")
