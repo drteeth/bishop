@@ -6,6 +6,8 @@ module Bishop
       @namespace = namespace
       @primitives = %w( Boolean String int Integer long Long Date )
 
+      puts "LOUD LOVE!!!!!!!!!!!!!!!"
+      
       @pattern_map = PatternMap.new
       # @map = 
       # {
