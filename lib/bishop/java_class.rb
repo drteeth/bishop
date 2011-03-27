@@ -1,9 +1,11 @@
 module Bishop
-  class Type
+  class JavaClass
     attr_accessor :name, :fields, :primitive_fields, :complex_fields
 
-    def initialize()
+    def initialize( type_info )
+      @name = type_info[:name]
       @fields = []
+            @primitives = %W( Boolean String int Integer long Long Date )
     end
 
     def getter
@@ -13,7 +15,15 @@ module Bishop
     def setter
       "set#{name}( #{type} #{} )"
     end
-
+    
+    def primitive_fields
+      fields.reject { |f| ( is_primitive_type( f.type ) == false ) }
+    end
+    
+    def complex_fields
+      fields.reject { |f| is_primitive_type( f.type ) }
+    end
+    
     def pluralize
       "#{name}s"
       

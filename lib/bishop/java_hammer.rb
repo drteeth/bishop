@@ -2,10 +2,11 @@ module Bishop
   class JavaHammer
 
     def initialize(options)
-      @xsd_dir = options[:xsd_dir]
+      @xsd_dir = File.expand_path(File.dirname(options[:file]))
       @namespace = options[:package]
       @output_folder = options[:output]
-      @primitives = %W( Boolean String int Integer long Long Date )
+
+      @template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/content-provider.java.erb')))
 
       @map = 
       {
@@ -30,38 +31,55 @@ module Bishop
 
     end    
 
-    def drop_on( type )
-      @template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/content-provider.java.erb')))
+    def generate( xsd_types )
+      xsd_types.each do |xsd_type|
+        if xsd_type[:name] =~ /^ArrayOf/
+          # don't generate ArrayOfTypes classes, 
+          # the xsd parser makes references to the into ArrayList<Type>
+          next 
+        end
+        
+        # create a java class
+        java_class = JavaClass.new( xsd_type[:name] )
+        java_class.fields = xsd_type.fields.collect do |xsd_field|
+          java_field = JavaField.new( xsd_field[:name] )
+          
+          java_field.type = get_java_type_name( xsd_field[:type] )
+          java_field.minOccurs = xsd_field[:minOccurs]
+          java_field.nillable = xsd_field[:nillable]
 
-      if type.name =~ /^ArrayOf/
-        return
+          java_field.is_primitive = is_primitive_type( java_field.type )
+          java_field.sql_type = get_sql_type( java_field.type )
+          
+          java_field
+        end 
+        
+        # TODO create an sql table
+        # sql_table = SqlTable.new( sql_type( xsd_type.type ) )
+        
+        # render the template
+        java_class_file = @template.result(get_binding)
+
+        # write it out
+        write_file( java_class.name )
+        
       end
-
-      @type = generate_class(type)
-      v = @template.result(get_binding)
-
+    end
+    
+    def write_file( filename )
       path = @namespace.gsub('.','/')
       dir = "#{@output_folder}#{path}/"
 
       FileUtils.mkdir_p dir
 
-      File.open("#{dir}#{@type.name}.java",'w') do |f|
+      File.open("#{dir}#{filename}.java",'w') do |f|
         f.write(v);
       end
-
     end
 
-    def generate_class( type )
-
-      type.fields.each do |f|
-        f.java_type = swap_type(f.type)
-        f.col_name = f.name.downcase
-        f.is_primitive = is_primitive_type f.java_type
-        f.sql_type = get_sql_type( f.java_type )
-      end
-
+    def create_id_field()
       # add ID field
-      id = Field.new
+      id = JavaField.new
       id.name = "_ID"
       id.type = "xs:int"
       id.minOccurs = "1";
@@ -69,43 +87,30 @@ module Bishop
       id.is_primitive = true
       id.java_type = "int"
       id.col_name = "_id"
-      type.fields << id
-
-      type.primitive_fields = type.fields.reject { |f| (is_primitive_type( f.java_type )==false) }
-      type.complex_fields = type.fields.reject { |f| is_primitive_type( f.java_type ) }
-
-      type
-
+      id
     end
 
     def is_primitive_type( typeName )
       @primitives.include?( typeName )
     end
 
-    def kludge( string )
-      string.gsub("getInteger", "getInt").gsub("getBoolean","getInt")
-    end
-
     def get_sql_type( java_type )
-
       @sql_map[java_type] || java_type
-
     end
 
-    def swap_type( qualifiedTypeName )
-      ns, typeName = qualifiedTypeName.split(':')
+    def get_java_type_name( xsd_type_name )
+      ns, name = xsd_type_name.split(':')
 
-      javaTypeName = nil
+      java_type_name = nil
+      
       @map[ns].each do |matcher|
-        if typeName =~ matcher[:pattern]
-          javaTypeName = (matcher[:substition] % $1 ) || matcher[:substition]
+        if name =~ matcher[:pattern]
+          java_type_name = ( matcher[:substition] % $1 ) || matcher[:substition]
           break
         end
       end
 
-      #puts "\t\t#{javaTypeName}"
-
-      javaTypeName
+      java_type_name
     end
 
     def get_binding

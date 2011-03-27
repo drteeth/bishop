@@ -25,11 +25,9 @@ module Bishop
       
       h = XsdParser.new
       xsd_types = h.parse(args.value(:file))
-      
-      options = args.to_options
-      options[:xsd_dir] = File.expand_path(File.dirname(options[:file]))
-      java_generator = JavaHammer.new( options )
-      java_generator.drop_on( xsd_types )
+
+      java_generator = JavaHammer.new( args.to_options )
+      java_generator.generate( xsd_types )
     end
   end
 end
