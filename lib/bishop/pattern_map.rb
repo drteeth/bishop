@@ -23,7 +23,6 @@ module Bishop
     end
 
     def replace(namespace, typeName)
-      puts '-' * 70
       puts "replace: #{namespace}:#{typeName}"
       @patterns[namespace.to_sym].each do |matcher|
         if typeName =~ matcher.pattern
