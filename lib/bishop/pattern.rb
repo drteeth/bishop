@@ -10,11 +10,13 @@ module Bishop
     end
 
     def substitute(value)
-      puts "substitute: #{value} == #{@substitition}"
+      puts "SUBSTITUTE: #{value} with #{@substitition}"
       if @action == :interpolate
         @substitition % value
-      else
+      elsif @action == :replace
         @substitition
+      else
+        raise "#{@action} is not a valid substitution action."
       end
     end
   end
