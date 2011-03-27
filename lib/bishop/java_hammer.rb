@@ -60,22 +60,15 @@ module Bishop
     end
 
     def kludge( string )
-      puts '-' * 70
-      puts "kludge: #{string}"
       @pattern_map.replace_all(:java, string)
     end
 
     def get_sql_type( java_type )
-      # puts '-' * 70
-      # puts "get_sql_type(#{java_type})"
       @pattern_map.replace(:sql, java_type) || java_type
     end
 
     def swap_type( qualifiedTypeName )
-      puts '-' * 70
-      puts "swap_type(#{qualifiedTypeName})"
       ns, typeName = qualifiedTypeName.split(':')
-      puts "ns: #{ns} : #{typeName}"
       @pattern_map.replace(ns, typeName)
     end
 
