@@ -26,7 +26,7 @@ module Bishop
     end
 
     def generate_class( type )
-      type.fields.each do |f|
+      type.fields.map! do |f|
         f.java_type = swap_type(f.type)
         f.col_name = f.name.downcase
         f.is_primitive = primitive_type? f.java_type
