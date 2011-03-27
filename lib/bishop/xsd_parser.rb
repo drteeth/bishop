@@ -18,9 +18,7 @@ module Bishop
       complexTypes = @doc.xpath("//xs:complexType", 'xs' => @xs )
 
       complexTypes.each do |complex_type|
-        type = Type.new(complex_type['name'], @xs)
-        type.build(complex_type)
-        
+        type = Type.new(complex_type, @xs)        
         @hammer.drop_on(type)
       end
     end

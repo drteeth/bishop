@@ -2,17 +2,11 @@ module Bishop
   class Type
     attr_accessor :name, :fields, :primitive_fields, :complex_fields
 
-    def initialize(name)
+    def initialize(complex_type, ns)
       @fields = []
-      @name = name
-    end
+      @name = complex_type['name']
 
-    def build(complex_type, ns)
-      elements = complex_type.xpath("xs:sequence/xs:element", 'xs' => ns)
-
-      elements.each do |field|
-        @fields << Field.new(field)
-      end
+      build(complex_type, ns)
     end
 
     def getter
@@ -25,6 +19,16 @@ module Bishop
 
     def pluralize
       "#{name}s"
+    end
+
+  private
+
+    def build(complex_type, ns)
+      elements = complex_type.xpath("xs:sequence/xs:element", 'xs' => ns)
+
+      elements.each do |field|
+        @fields << Field.new(field)
+      end
     end
   end
 end
