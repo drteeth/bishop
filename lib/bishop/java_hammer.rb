@@ -66,8 +66,8 @@ module Bishop
     end
 
     def get_sql_type( java_type )
-      puts '-' * 70
-      puts "get_sql_type(#{java_type})"
+      # puts '-' * 70
+      # puts "get_sql_type(#{java_type})"
       @pattern_map.replace(:sql, java_type) || java_type
     end
 
