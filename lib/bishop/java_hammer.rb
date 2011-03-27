@@ -26,13 +26,8 @@ module Bishop
     end
 
     def generate_class( type )
-      type.fields.map! do |f|
-        f.java_type = swap_type(f.type)
-        f.col_name = f.name.downcase
-        f.is_primitive = primitive_type? f.java_type
-        f.sql_type = get_sql_type( f.java_type )
-      end
-
+      massage_fields(type)
+      
       # add ID field
       type.fields << create_id_field()
       type.primitive_fields = type.fields.reject { |f| (primitive_type?( f.java_type )==false) }
@@ -41,6 +36,15 @@ module Bishop
       type
     end
 
+    def massage_fields(type)
+      type.fields.each do |f|
+        f.java_type = swap_type(f.type)
+        f.col_name = f.name.downcase
+        f.is_primitive = primitive_type? f.java_type
+        f.sql_type = get_sql_type( f.java_type )
+      end
+    end
+    
     def create_id_field
       field = Field.new({
         'name' => "_ID",
