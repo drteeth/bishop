@@ -10,7 +10,7 @@ module Bishop
     end
 
     def substitute(value)
-      puts "SUBSTITUTE: #{value} with #{@substitition}"
+      puts "substitute: #{value} with #{@substitition}"
       if @action == :interpolate
         @substitition % value
       elsif @action == :replace
