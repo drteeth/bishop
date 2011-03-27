@@ -2,11 +2,11 @@ require 'nokogiri'
 require 'erb'
 require 'fileutils'
 require 'trollop'
-require "active_support"
+require 'active_support/inflector'
 
 require 'bishop/args'
-require 'bishop/field'
-require 'bishop/type'
+require 'bishop/java_field'
+require 'bishop/java_class'
 require 'bishop/xsd_parser'
 require 'bishop/java_hammer'
 

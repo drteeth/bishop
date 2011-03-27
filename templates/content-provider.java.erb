@@ -17,7 +17,7 @@ import android.provider.BaseColumns;
 import android.text.TextUtils;
 import android.util.Log;
 
-public class <%= @type.name %> extends ContentProvider
+public class <%= @type.class_name %> extends ContentProvider
 {
 	public <%= @type.name %>() 
 	{}
@@ -27,11 +27,16 @@ public class <%= @type.name %> extends ContentProvider
 	public static final int ITEMS = 1;
 	public static final int ITEM_ID = 2;
 
-	public static final Uri CONTENT_URI = Uri.parse( "content://" + PROVIDER_NAME + "/<%= @type.name.downcase %>" );
+	public static final Uri CONTENT_URI = Uri.parse( "content://" + PROVIDER_NAME + "/<%= @type.names.downcase %>" );
+	
+	// these should be vnd.com.example.typename (just the base package, lower case singular type name)
 	public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.<%= @namespace %>.<%= @type.name.downcase %>";
 	public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.<%= @namespace %>.<%= @type.name.downcase %>";
-
-	private SQLiteDatabase demoDB;
+	
+	// TODO implement modified and created fields...
+	//public static final String DEFAULT_SORT_ORDER = "modified DESC";
+	
+	private SQLiteDatabase m_database;
 
 	private static final UriMatcher uriMatcher;
 
@@ -43,13 +48,13 @@ public class <%= @type.name %> extends ContentProvider
 	}
 	
 	<% @type.fields.each do |f| %>
-	public <%= f.java_type %> <%= f.name %>;
+	public <%= f.type %> <%= f.name %>;
 	<% end %>
 	
 	public static class Columns implements BaseColumns
 	{
-		<% @type.fields.each do |f| %>
-		public static final String <%= f.name.upcase %> = "<%= f.col_name %><%= f.is_primitive ? "" : "_id" %>";
+		<% @type.primitive_fields.each do |f| %>
+		public static final String <%= f.name.upcase %> = "<%= f.col_name %>";
 		<% end %>
 	}
 	
@@ -69,11 +74,11 @@ public class <%= @type.name %> extends ContentProvider
 		<%= @type.name %> <%= @type.name.downcase %> = new <%= @type.name %>();
 		
 		<% @type.primitive_fields.each do |f| %>
-		<%= @type.name.downcase %>.<%= f.name %> = c.get<%= f.java_type.capitalize %>( c.getColumnIndex( <%= @type.name %>.Columns.<%= f.name.upcase %> ) ;
+		<%= @type.name.downcase %>.<%= f.name %> = c.get<%= f.type.capitalize %>( c.getColumnIndex( <%= @type.name %>.Columns.<%= f.name.upcase %> ) );
 		<% end %>
 		
 		<% @type.complex_fields.each do |f| %>		
-		//<%= @type.name.downcase %>.set<%= f.name %>( c.get<%= f.java_type %>( columnIndex ) );
+		//<%= @type.name.downcase %>.<%= f.name %> = c.get<%= f.type.capitalize %>( c.getColumnIndex( <%= @type.name %>.Columns.<%= f.name.upcase %> ) );
 		<% end %>
 		
 		return <%= @type.name.downcase %>;
@@ -86,11 +91,11 @@ public class <%= @type.name %> extends ContentProvider
 		switch( uriMatcher.match( uri ) )
 		{
 			case <%= @type.name %>.ITEMS:
-				count = demoDB.delete( <%= @type.name %>.DATABASE_TABLE, selection, selectionArgs );
+				count = m_database.delete( <%= @type.name %>.DATABASE_TABLE, selection, selectionArgs );
 				break;
 			case <%= @type.name %>.ITEM_ID:
 				String id = uri.getPathSegments().get( 1 );
-				count = demoDB.delete( <%= @type.name %>.DATABASE_TABLE, Columns._ID + " = " + id
+				count = m_database.delete( <%= @type.name %>.DATABASE_TABLE, Columns._ID + " = " + id
 						+ ( !TextUtils.isEmpty( selection ) ? " AND (" + selection + ')' : "" ), selectionArgs );
 				break;
 			default:
@@ -117,7 +122,7 @@ public class <%= @type.name %> extends ContentProvider
 	@Override
 	public Uri insert( Uri uri, ContentValues values )
 	{
-		long rowID = demoDB.insert( <%= @type.name %>.DATABASE_TABLE, "", values );
+		long rowID = m_database.insert( <%= @type.name %>.DATABASE_TABLE, "", values );
 		if( rowID > 0 )
 		{
 			Uri _uri = ContentUris.withAppendedId( CONTENT_URI, rowID );
@@ -133,8 +138,8 @@ public class <%= @type.name %> extends ContentProvider
 	{
 		Context context = getContext();
 		SQLiteConnectionManager dbHelper = new SQLiteConnectionManager( context );
-		demoDB = dbHelper.getWritableDatabase();
-		return ( demoDB == null ) ? false : true;
+		m_database = dbHelper.getWritableDatabase();
+		return ( m_database == null ) ? false : true;
 	}
 
 	@Override
@@ -144,7 +149,7 @@ public class <%= @type.name %> extends ContentProvider
 		sqlBuilder.setTables( <%= @type.name %>.DATABASE_TABLE );
 		if( uriMatcher.match( uri ) == <%= @type.name %>.ITEM_ID )
 			sqlBuilder.appendWhere( Columns._ID + " = " + uri.getPathSegments().get( 1 ) );
-		Cursor c = sqlBuilder.query( demoDB, projection, selection, selectionArgs, null, null, sortOrder );
+		Cursor c = sqlBuilder.query( m_database, projection, selection, selectionArgs, null, null, sortOrder );
 		c.setNotificationUri( getContext().getContentResolver(), uri );
 		return c;
 	}
@@ -156,11 +161,11 @@ public class <%= @type.name %> extends ContentProvider
 		switch( uriMatcher.match( uri ) )
 		{
 			case <%= @type.name %>.ITEMS:
-				count = demoDB.update( <%= @type.name %>.DATABASE_TABLE, values, selection, selectionArgs );
+				count = m_database.update( <%= @type.name %>.DATABASE_TABLE, values, selection, selectionArgs );
 				break;
 
 			case <%= @type.name %>.ITEM_ID:
-				count = demoDB.update( <%= @type.name %>.DATABASE_TABLE, values, Columns._ID + " = " + uri.getPathSegments().get( 1 )
+				count = m_database.update( <%= @type.name %>.DATABASE_TABLE, values, Columns._ID + " = " + uri.getPathSegments().get( 1 )
 						+ ( !TextUtils.isEmpty( selection ) ? " AND (" + selection + ')' : "" ), selectionArgs );
 				break;
 			default:
@@ -174,9 +179,9 @@ public class <%= @type.name %> extends ContentProvider
 	public class SQLiteConnectionManager extends SQLiteOpenHelper
 	{
 
-		private static final String DATABASENAME = "DEMODB";
+		private static final String DATABASENAME = "todo.db";
 		private static final int DATABASE_VERSION = 1;
-		private static final String CREATE_USERINFO = "CREATE TABLE <%= @type.name.downcase %>( _id INTEGER NOT NULL CONSTRAINT USER_PK PRIMARY KEY AUTOINCREMENT <%= @type.primitive_fields.reject{ |f| f.name == "_ID" }.map{ |f| "#{f.col_name} #{f.sql_type}" }.join(', ') %> )";
+		private static final String CREATE_USERINFO = "CREATE TABLE <%= @type.name.downcase %>( _id INTEGER NOT NULL CONSTRAINT USER_PK PRIMARY KEY AUTOINCREMENT <%= @type.primitive_fields.reject{ |f| f.name == "_id" }.map{ |f| "#{f.col_name} #{f.sql_type}" }.join(', ') %> )";
 
 		public SQLiteConnectionManager( Context context )
 		{
