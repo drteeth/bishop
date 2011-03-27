@@ -2,7 +2,6 @@ module Bishop
   class JavaHammer
 
     def initialize(namespace)
-      # @xsd_dir = xsd_dir
       @namespace = namespace
       @primitives = %w( Boolean String int Integer long Long Date )
 
@@ -19,7 +18,7 @@ module Bishop
       path = @namespace.gsub('.','/')
       dir = "./generated/#{path}/"
 
-      FileUtils.mkdir_p dir
+      FileUtils.mkdir_p(dir)
 
       File.open("#{dir}#{@type.name}.java",'w') do |f|
         f.write(v);
@@ -27,7 +26,6 @@ module Bishop
     end
 
     def generate_class( type )
-
       type.fields.each do |f|
         f.java_type = swap_type(f.type)
         f.col_name = f.name.downcase
@@ -36,7 +34,15 @@ module Bishop
       end
 
       # add ID field
-      id = Field.new({
+      type.fields << create_id_field()
+      type.primitive_fields = type.fields.reject { |f| (primitive_type?( f.java_type )==false) }
+      type.complex_fields = type.fields.reject   { |f| primitive_type?( f.java_type ) }
+
+      type
+    end
+
+    def create_id_field
+      field = Field.new({
         'name' => "_ID",
         'type' => "xs:int",
         'minOccurs' => "1",
@@ -46,15 +52,10 @@ module Bishop
       id.is_primitive = true
       id.java_type = "int"
       id.col_name = "_id"
-      type.fields << id
 
-      type.primitive_fields = type.fields.reject { |f| (primitive_type?( f.java_type )==false) }
-      type.complex_fields = type.fields.reject { |f| primitive_type?( f.java_type ) }
-
-      type
-
+      field
     end
-
+    
     def primitive_type?( typeName )
       @primitives.include?( typeName )
     end
