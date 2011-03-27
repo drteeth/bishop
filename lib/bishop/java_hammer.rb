@@ -28,8 +28,10 @@ module Bishop
     def generate_class( type )
       massage_fields(type)
       
-      # add ID field
+      # add ID field to type
       type.fields << create_id_field()
+      # reject => where block is not true
+      # delete_if where block is true
       type.primitive_fields = type.fields.reject { |f| (primitive_type?( f.java_type )==false) }
       type.complex_fields = type.fields.reject   { |f| primitive_type?( f.java_type ) }
 
