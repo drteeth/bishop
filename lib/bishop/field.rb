@@ -7,7 +7,8 @@ module Bishop
       @name = field_info['name'] || ''
       @type = field_info['type'] || ''
       @minOccurs = field_info['minOccurs'] || 0
-      @nillable = field_info['nillable'] || false
+      #TODO: should nillable default to true or false?
+      @nillable = field_info['nillable'] || true
     end
 
     def pluralize

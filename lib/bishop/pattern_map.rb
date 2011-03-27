@@ -16,6 +16,10 @@ module Bishop
 
       @patterns[:sql] = []
       @patterns[:sql] << Pattern.new(/String/, "Text")
+
+      @patterns[:java] = []
+      @patterns[:java] << Pattern.new(/getInteger/, "getInt")
+      @patterns[:java] << Pattern.new(/getBoolean/, "getInt")
     end
 
     def replace(namespace, typeName)
@@ -27,6 +31,15 @@ module Bishop
 
       nil
     end
-      
+
+    def replace_all(namespace, value)
+      @patterns[namespace.to_sym].each do |matcher|
+        if typeName =~ matcher.pattern
+          value = matcher.substitute($1)
+        end
+      end
+
+      value
+    end
   end
 end

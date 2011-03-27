@@ -36,11 +36,13 @@ module Bishop
       end
 
       # add ID field
-      id = Field.new
-      id.name = "_ID"
-      id.type = "xs:int"
-      id.minOccurs = "1";
-      id.nillable = "false"
+      id = Field.new({
+        'name' => "_ID",
+        'type' => "xs:int",
+        'minOccurs' => "1",
+        'nillable' => "false"
+      })
+      
       id.is_primitive = true
       id.java_type = "int"
       id.col_name = "_id"
@@ -58,11 +60,10 @@ module Bishop
     end
 
     def kludge( string )
-      string.gsub("getInteger", "getInt").gsub("getBoolean","getInt")
+      @pattern_map.replace_all(:java, string)
     end
 
     def get_sql_type( java_type )
-      # @sql_map[java_type] || java_type
       @pattern_map.replace(:sql, java_type) || java_type
     end
 
