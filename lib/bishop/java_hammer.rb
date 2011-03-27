@@ -6,30 +6,7 @@ module Bishop
       @namespace = namespace
       @primitives = %w( Boolean String int Integer long Long Date )
 
-      puts "LOUD LOVE!!!!!!!!!!!!!!!"
-      
       @pattern_map = PatternMap.new
-      # @map = 
-      # {
-      #   'tns' => 
-      #   [
-      #     { :pattern => /ArrayOf([a-zA-Z]+)/, :substition => "ArrayList<%s>" },
-      #     { :pattern => /(\w+)/,  :substition => "%s" }, 
-      #   ],
-      #   'xs' =>
-      #   [
-      #     { :pattern => /boolean/, :substition => "Boolean" },
-      #     { :pattern => /string/, :substition => "String" },
-      #     { :pattern => /int/, :substition => "Integer" },
-      #     { :pattern => /dateTime/, :substition => "Date" },
-      #     { :pattern => /anyURI/, :substition => "String" },
-      #   ],
-      # }
-
-      # @sql_map = {
-      #   "String" => "Text"
-      # }
-
     end    
 
     def drop_on( type )
@@ -93,25 +70,10 @@ module Bishop
       ns, typeName = qualifiedTypeName.split(':')
 
       @pattern_map.replace(ns, typeName)
-      #javaTypeName = nil
-
-      # for each pattern in the namespace
-      # @map[ns].each do |matcher|
-      #   if typeName =~ matcher[:pattern]
-      #     # javaTypeName = (matcher[:substition] % $1 ) || matcher[:substition]
-      #     javaTypeName = matcher[:substition] % $1
-      #     break
-      #   end
-      # end
-
-      #puts "\t\t#{javaTypeName}"
-
-      #javaTypeName
     end
 
     def get_binding
       binding
     end
-
   end
 end

@@ -15,30 +15,13 @@ module Bishop
     end
 
     def do_types
-      @complexTypes = @doc.xpath("//xs:complexType", 'xs' => @xs )
+      complexTypes = @doc.xpath("//xs:complexType", 'xs' => @xs )
 
-      @complexTypes.each do |t|
-
-        type = Type.new
-        type.name = t['name']
-
-        @elements = t.xpath("xs:sequence/xs:element", 'xs' => @xs )
-
-        @elements.each do |f|
-          #puts "\t#{field['name']} #{field['type']}"        
-
-          field = Field.new         
-          field.name = f['name']
-          field.type = f['type']
-          field.minOccurs = f['minOccurs']
-          field.nillable = f['nillable']
-
-          type.fields << field
-
-        end
+      complexTypes.each do |complex_type|
+        type = Type.new(complex_type['name'])
+        type.build(complex_type)
         
-        @hammer.drop_on( type )
-
+        @hammer.drop_on(type)
       end
     end
 
