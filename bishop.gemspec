@@ -18,6 +18,7 @@ Gem::Specification.new do |s|
   s.add_dependency('nokogiri')
   s.add_dependency('trollop')
   # for the inflector/pluralizer
+  s.add_dependency('i18n')
   s.add_dependency('activesupport')
   
   # development/testing
