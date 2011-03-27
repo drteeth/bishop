@@ -12,16 +12,16 @@ module Bishop
       "get#{type}()"
     end
     
+    def setter
+      "set#{name}( #{type} #{} )"
+    end
+    
     def class_name
       ActiveSupport::Inflector.camelize( name )
     end
     
     def names
       ActiveSupport::Inflector.pluralize( name )
-    end
-
-    def setter
-      "set#{name}( #{type} #{} )"
     end
     
     def primitive_fields
@@ -37,19 +37,8 @@ module Bishop
     end
     
     def pluralize
-      "#{name}s"
-      
-      #pluralize(1, 'person')
-      # => 1 person
-
-      #pluralize(2, 'person')
-      # => 2 people
-
-      #pluralize(3, 'person', 'users')
-      # => 3 users
-
-      #pluralize(0, 'person')
-      # => 0 people
+      ActiveSupport::Inflector.pluralize( name )
     end
+    
   end
 end
