@@ -5,7 +5,7 @@ module Bishop
       @xsd_dir = File.expand_path(File.dirname(options[:file]))
       @namespace = options[:package]
       @output_folder = options[:output]
- @template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/content-provider.java.erb')))
+      @template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/content-provider.java.erb')))
       @pattern_map = PatternMap.new
     end    
 
@@ -93,10 +93,6 @@ module Bishop
       id.col_name = "modified"
       id.sql_type = "integer"
       id
-    end
-    
-    def primitive_type?( typeName )
-      @primitives.include?( typeName )
     end
 
      def get_sql_type( java_type )
