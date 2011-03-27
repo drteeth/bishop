@@ -18,7 +18,8 @@ module Bishop
     end
 
     def pluralize
-      "#{name}s"
+      # "#{name}s"
+      name.pluralize
     end
 
   private
