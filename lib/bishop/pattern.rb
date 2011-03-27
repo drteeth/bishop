@@ -10,6 +10,7 @@ module Bishop
     end
 
     def substitute(value)
+      puts "substitute: #{value} == #{@substitition}"
       if @action == :interpolate
         @substitition % value
       else
