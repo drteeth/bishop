@@ -74,7 +74,7 @@ public class <%= @type.class_name %> extends ContentProvider
 		<%= @type.name %> <%= @type.name.downcase %> = new <%= @type.name %>();
 		
 		<% @type.primitive_fields.each do |f| %>
-		<%= "#{f.get_primitive_substitute}  _#{f.name.downcase} = c.get#{f.get_primitive_substitute.capitalize}( c.getColumnIndex( #{@type.name}.Columns.#{f.name.upcase} ) );" %>
+		<%= "#{f.get_primitive_substitute} _#{f.name.downcase} = c.get#{f.get_primitive_substitute.capitalize}( c.getColumnIndex( #{@type.name}.Columns.#{f.name.upcase} ) );" %>
 		<%= @type.name.downcase %>.<%= f.name %> = <%= f.upcast( "_#{f.name.downcase}" ) %>;
 		<% end %>
 		
@@ -123,6 +123,11 @@ public class <%= @type.class_name %> extends ContentProvider
 	@Override
 	public Uri insert( Uri uri, ContentValues values )
 	{
+		// set the created and modified times
+		Long now = System.currentTimeMillis();
+		values.put( <%= @type.name %>.Columns.CREATED, now );
+		values.put( <%= @type.name %>.Columns.MODIFIED, now );
+				
 		long rowID = m_database.insert( <%= @type.name %>.DATABASE_TABLE, "", values );
 		if( rowID > 0 )
 		{
@@ -131,7 +136,7 @@ public class <%= @type.class_name %> extends ContentProvider
 			return _uri;
 		}
 
-		throw new UnsupportedOperationException( "shitball" );
+		throw new UnsupportedOperationException( "Failled to insert: " + uri.toString() );
 	}
 
 	@Override
@@ -140,7 +145,7 @@ public class <%= @type.class_name %> extends ContentProvider
 		Context context = getContext();
 		SQLiteConnectionManager dbHelper = new SQLiteConnectionManager( context );
 		m_database = dbHelper.getWritableDatabase();
-		return ( m_database == null ) ? false : true;
+		return ( m_database != null );
 	}
 
 	@Override
@@ -158,6 +163,7 @@ public class <%= @type.class_name %> extends ContentProvider
 	@Override
 	public int update( Uri uri, ContentValues values, String selection, String[] selectionArgs )
 	{
+		values.put( <%= @type.name %>.Columns.MODIFIED, System.currentTimeMillis() );
 		int count = 0;
 		switch( uriMatcher.match( uri ) )
 		{

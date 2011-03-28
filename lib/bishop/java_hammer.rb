@@ -74,7 +74,7 @@ module Bishop
     def create_created_field()
       # add ID field
       id = JavaField.new( "Created" )
-      id.type = "Integer"
+      id.type = "Long"
       id.minOccurs = "1";
       id.nillable = "false"
       id.is_primitive = true
@@ -86,7 +86,7 @@ module Bishop
     def create_modified_field()
       # add ID field
       id = JavaField.new( "Modified" )
-      id.type = "Integer"
+      id.type = "Long"
       id.minOccurs = "1";
       id.nillable = "false"
       id.is_primitive = true
