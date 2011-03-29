@@ -1,0 +1,74 @@
+package <%= @namespace %>;
+
+import java.util.Date;
+import java.util.ArrayList;
+
+import android.content.ContentProvider;
+import android.content.ContentUris;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.UriMatcher;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteQueryBuilder;
+import android.net.Uri;
+import android.provider.BaseColumns;
+import android.text.TextUtils;
+import android.util.Log;
+
+public class <%= @type.class_name %> extends ContentProvider
+{
+	public <%= @type.name %>() 
+	{}
+	
+	public static final String AUTHORITY = "<%= @namespace %>.<%= @type.name %>";
+	public static final String DATABASE_TABLE = "<%= @type.pluralize.downcase %>";
+
+	public static final Uri CONTENT_URI = Uri.parse( "content://" + AUTHORITY + "/<%= @type.pluralize.downcase %>" );
+	
+	// these should be vnd.com.example.typename (just the base package, lower case singular type name)
+	public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.<%= @namespace %>.<%= @type.name.downcase %>";
+	public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.<%= @namespace %>.<%= @type.name.downcase %>";
+	
+	public static final String DEFAULT_SORT_ORDER = "modified DESC";
+
+	<% @type.fields.each do |f| %>
+	public <%= f.type %> <%= f.name %>;
+	<% end %>
+	
+	public static final class Columns implements BaseColumns
+	{
+		<% @type.primitive_fields.each do |f| %>
+		public static final String <%= f.name.upcase %> = "<%= f.col_name %>";
+		<% end %>
+	}
+	
+	public static ContentValues getValues( <%= @type.name %> _<%= @type.name.downcase %> )
+	{
+		ContentValues values = new ContentValues();
+		
+		<% @type.primitive_fields.each do |f| %>
+		values.put( <%= @type.name %>.Columns.<%= f.name.upcase %>, <%= f.convert_to_primitive( "_#{@type.name.downcase}.#{f.name}" ) %> );
+		<% end %>
+		
+		return values;
+	}
+	
+	public static <%= @type.name %> getFromCursor( Cursor c )
+	{
+		<%= @type.name %> <%= @type.name.downcase %> = new <%= @type.name %>();
+		
+		<% @type.primitive_fields.each do |f| %>
+		<%= "#{f.get_primitive_substitute}  _#{f.name.downcase} = c.get#{f.get_primitive_substitute.capitalize}( c.getColumnIndex( #{@type.name}.Columns.#{f.name.upcase} ) );" %>
+		<%= @type.name.downcase %>.<%= f.name %> = <%= f.upcast( "_#{f.name.downcase}" ) %>;
+		<% end %>
+		
+		<% @type.complex_fields.each do |f| %>		
+		//<%= @type.name.downcase %>.<%= f.name %> = c.get<%= f.type.capitalize %>( c.getColumnIndex( <%= @type.name %>.Columns.<%= f.name.upcase %> ) );
+		<% end %>
+		
+		return <%= @type.name.downcase %>;
+	}
+	
+}

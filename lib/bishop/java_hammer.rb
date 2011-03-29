@@ -5,7 +5,8 @@ module Bishop
       @xsd_dir = File.expand_path(File.dirname(options[:file]))
       @namespace = options[:package]
       @output_folder = options[:output]
-      @template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/content-provider.java.erb')))
+      @provider_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/content-provider.java.erb')))
+      @dto_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/dto.java.erb')))
       @pattern_map = PatternMap.new
     end    
 
@@ -40,8 +41,9 @@ module Bishop
         # set the type field for the template
         @type = java_class
 
-        # render the template and write it out
-        write_file( java_class.name, @template.result(get_binding) )
+        # render the templates and write them out
+        write_file( java_class.name, @provider_template.result(get_binding) )
+        write_file( java_class.name, @dto_template.result(get_binding) )
         
       end
     end
