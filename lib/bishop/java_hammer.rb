@@ -7,6 +7,8 @@ module Bishop
       @output_folder = options[:output]
       @provider_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/content-provider.java.erb')))
       @dto_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/dto.java.erb')))
+      #@dao_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/dto.java.erb')))
+      @test_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/test.java.erb')))
       @pattern_map = PatternMap.new
     end    
 
@@ -42,16 +44,18 @@ module Bishop
         @type = java_class
 
         # render the templates and write them out
-        write_file( java_class.name, @provider_template.result(get_binding) )
-        write_file( java_class.name, @dto_template.result(get_binding) )
+        write_file( "#{@namespace}.provider.#{java_class.name}Provider", @provider_template.result(get_binding) )
+        write_file( "#{@namespace}.model.#{java_class.name}", @dto_template.result(get_binding) )
+        write_file( "#{@namespace}.provider.test.#{java_class.name}ProviderTest", @test_template.result(get_binding) )
+        #write_file( "#{@namespace}.model.dao.#{java_class.name}Dao", @dao_template.result(get_binding) )
         
       end
     end
     
     def write_file( filename, contents )
-      path = @namespace.gsub('.','/')
-      dir = "#{@output_folder}#{path}/"
-      output_file = "#{dir}#{filename}.java"
+      filename = filename.gsub('.','/')
+      output_file = "#{@output_folder}/#{filename}.java"
+      dir = File.dirname(output_file)
 
       FileUtils.mkdir_p dir
 

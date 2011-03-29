@@ -1,185 +1,117 @@
-package <%= @namespace %>;
+package <%= @namespace %>.provider.test;
 
 import java.util.Date;
-import java.util.ArrayList;
 
-import android.content.ContentProvider;
-import android.content.ContentUris;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.UriMatcher;
+import android.content.ContentResolver;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
-import android.provider.BaseColumns;
-import android.text.TextUtils;
+import android.test.ProviderTestCase2;
+import android.test.mock.MockContentResolver;
 
-public class <%= @type.name %>
+import <%= @namespace %>.model.<%= @type.class_name %>;
+import <%= @namespace %>.provider.<%= @type.class_name %>Provider;
+
+public class <%= @type.class_name %>ProviderTest extends ProviderTestCase2<<%= @type.class_name %>Provider>
 {
-	public <%= @type.name %>()
-	{}
-	
-	public static final String PROVIDER_NAME = "<%= @namespace %>.<%= @type.name %>";
-	public static final String DATABASE_TABLE = "<%= @type.pluralize.downcase %>";
-	public static final int ITEMS = 1;
-	public static final int ITEM_ID = 2;
+	public <%= @type.class_name %>ProviderTest()
+	{
+		super( <%= @type.class_name %>Provider.class, <%= @type.class_name %>Provider.AUTHORITY );
+	}
 
-	public static final Uri CONTENT_URI = Uri.parse( "content://" + PROVIDER_NAME + "/<%= @type.name.downcase %>" );
-	public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.<%= @namespace %>.<%= @type.name.downcase %>";
-	public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.<%= @namespace %>.<%= @type.name.downcase %>";
+	private <%= @type.class_name %>Provider <%= @type.name.downcase %>;
 
-	private SQLiteDatabase demoDB;
+	@Override
+	protected void setUp() throws Exception
+	{
+		super.setUp();
 
-	private static final UriMatcher uriMatcher;
+		<%= @type.name.downcase %> = new <%= @type.class_name %>Provider();
+	}
 
-	static
+	@Override
+	public MockContentResolver getMockContentResolver()
 	{
-		uriMatcher = new UriMatcher( UriMatcher.NO_MATCH );
-		uriMatcher.addURI( PROVIDER_NAME, <%= @type.name %>.DATABASE_TABLE, <%= @type.name %>.ITEMS );
-		uriMatcher.addURI( PROVIDER_NAME, <%= @type.name %>.DATABASE_TABLE + "/#", <%= @type.name %>.ITEM_ID );
+		return super.getMockContentResolver();
 	}
-	
-	<% @type.fields.each do |f| %>
-	private <%= f.java_type %> m_<%= f.name %>;
-	<% end %>
-	
-	public static class Columns implements BaseColumns
+
+	private <%= @type.class_name %> create<%= @type.class_name %>()
 	{
-		<% @type.fields.each do |f| %>
-		public static final String <%= f.name.upcase %> = "<%= f.col_name %><%= f.is_primitive ? "" : "_id" %>";
-		<% end %>
-	}
-	
-	<% @type.fields.each do |f| %>
-	public <%= f.java_type %> get<%= f.name %>()
-	{
-		return m_<%= f.name.downcase %>;
-	}
-	
-	public void set<%= f.name %>( <%= f.java_type %> value )
-	{
-		m_<%= f.name.downcase %> = value;
-	}
-	<% end %>
-	
-	public static ContentValues getValues( <%= @type.name %> _<%= @type.name.downcase %> )
-	{
-		ContentValues values = new ContentValues();
+		<%= @type.class_name %> <%= @type.name.downcase %> = new <%= @type.class_name %>();
 		
-		<% @type.primitive_fields.each do |f| %>
-		values.put( <%= @type.name %>.Columns.<%= f.name.upcase %>, _<%= @type.name.downcase %>.get<%= f.name %>() );
-		<% end %>
-		
-		return values;
-	}
-	
-	public static <%= @type.name %> getFromCursor( Cursor c )
-	{
-		<%= @type.name %> <%= @type.name.downcase %> = new <%= @type.name %>();
-		
-		<% @type.primitive_fields.each do |f| %>		
-		int <%= f.name.downcase %>ColumnIndex = c.getColumnIndex( <%= @type.name %>.Columns.<%= f.name.upcase %> );
-		<%= @type.name.downcase %>.set<%= f.name %>( c.get<%= f.java_type %>( <%= f.name.downcase %>ColumnIndex ) );		
-		<% end %>
-		
-		<% @type.complex_fields.each do |f| %>		
-		//<%= @type.name.downcase %>.set<%= f.name %>( c.get<%= f.java_type %>( columnIndex ) );
-		<% end %>
-		
+		// todo: fill out default properties
+
 		return <%= @type.name.downcase %>;
 	}
-	
-	@Override
-		public int delete( Uri uri, String selection, String[] selectionArgs )
-		{
-			int count = 0;
-			switch( uriMatcher.match( uri ) )
-			{
-				case <%= @type.name %>.ITEMS:
-					count = demoDB.delete( <%= @type.name %>.DATABASE_TABLE, selection, selectionArgs );
-					break;
-				case <%= @type.name %>.ITEM_ID:
-					String id = uri.getPathSegments().get( 1 );
-					count = demoDB.delete( <%= @type.name %>.DATABASE_TABLE, <%= @type.name %>._ID + " = " + id
-							+ ( !TextUtils.isEmpty( selection ) ? " AND (" + selection + ')' : "" ), selectionArgs );
-					break;
-				default:
-					throw new IllegalArgumentException( "Unknown URI " + uri );
-			}
-			getContext().getContentResolver().notifyChange( uri, null );
-			return count;
-		}
 
-		@Override
-		public String getType( Uri uri )
-		{
-			switch( uriMatcher.match( uri ) )
-			{
-				case <%= @type.name %>.ITEMS:
-					return <%= @type.name %>.CONTENT_TYPE;
-				case <%= @type.name %>.ITEM_ID:
-					return <%= @type.name %>.CONTENT_ITEM_TYPE;
-				default:
-					throw new IllegalArgumentException( "Unsupported URI: " + uri );
-			}
-		}
+	public void testPreconditions()
+	{
+		assertNotNull( <%= @type.name.downcase %> );
+	}
 
-		@Override
-		public Uri insert( Uri uri, ContentValues values )
-		{
-			long rowID = demoDB.insert( <%= @type.name %>.DATABASE_TABLE, "", values );
-			if( rowID > 0 )
-			{
-				Uri _uri = ContentUris.withAppendedId( CONTENT_URI, rowID );
-				getContext().getContentResolver().notifyChange( _uri, null );
-				return _uri;
-			}
+	public void testInsertNew()
+	{
+		ContentResolver r = getMockContentResolver();
+		<%= @type.class_name %> <%= @type.name.downcase %> = create<%= @type.class_name %>();
+		Uri new<%= @type.class_name %>Uri = r.insert( <%= @type.class_name %>Provider.CONTENT_URI, <%= @type.class_name %>Provider.getValues( <%= @type.name.downcase %> ) );
 
-			throw new UnsupportedOperationException( "shitball" );
-		}
+		assertNotNull( new<%= @type.class_name %>Uri );
 
-		@Override
-		public boolean onCreate()
-		{
-			Context context = getContext();
-			SQLiteConnectionManager dbHelper = new SQLiteConnectionManager( context );
-			demoDB = dbHelper.getWritableDatabase();
-			return ( demoDB == null ) ? false : true;
-		}
+		// get it from the database
 
-		@Override
-		public Cursor query( Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder )
-		{
-			SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
-			sqlBuilder.setTables( <%= @type.name %>.DATABASE_TABLE );
-			if( uriMatcher.match( uri ) == <%= @type.name %>.ITEM_ID )
-				sqlBuilder.appendWhere( <%= @type.name %>._ID + " = " + uri.getPathSegments().get( 1 ) );
-			Cursor c = sqlBuilder.query( demoDB, projection, selection, selectionArgs, null, null, sortOrder );
-			c.setNotificationUri( getContext().getContentResolver(), uri );
-			return c;
-		}
+		Cursor c = r.query( new<%= @type.class_name %>Uri, null, null, null, null );
+		assertEquals( 1, c.getCount() );
+		assertTrue( c.moveToFirst() );
 
-		@Override
-		public int update( Uri uri, ContentValues values, String selection, String[] selectionArgs )
-		{
-			int count = 0;
-			switch( uriMatcher.match( uri ) )
-			{
-				case <%= @type.name %>.ITEMS:
-					count = demoDB.update( <%= @type.name %>.DATABASE_TABLE, values, selection, selectionArgs );
-					break;
+		<%= @type.name.downcase %> = <%= @type.class_name %>Provider.getFromCursor( c );
 
-				case <%= @type.name %>.ITEM_ID:
-					count = demoDB.update( <%= @type.name %>.DATABASE_TABLE, values, <%= @type.name %>._ID + " = " + uri.getPathSegments().get( 1 )
-							+ ( !TextUtils.isEmpty( selection ) ? " AND (" + selection + ')' : "" ), selectionArgs );
-					break;
-				default:
-					throw new IllegalArgumentException( "Unknown URI " + uri );
-			}
-			getContext().getContentResolver().notifyChange( uri, null );
+		assertNotNull( <%= @type.name.downcase %> );
+		assertNotNull( <%= @type.name.downcase %>.get_ID() );
+		assertNotNull( <%= @type.name.downcase %>.getCreated() );
+		assertNotNull( <%= @type.name.downcase %>.getModified() );
+	}
 
-			return count;
-		}
-	
+	public void testQuery()
+	{
+		ContentResolver r = getMockContentResolver();
+		<%= @type.class_name %> <%= @type.name.downcase %> = create<%= @type.class_name %>();
+
+		Uri <%= @type.name.downcase %>Uri = r.insert( <%= @type.class_name %>Provider.CONTENT_URI, <%= @type.class_name %>Provider.getValues( <%= @type.name.downcase %> ) );
+
+		Cursor c = r.query( <%= @type.name.downcase %>Uri, null, null, null, null );
+		assertEquals( 1, c.getCount() );
+		assertTrue( c.moveToFirst() );
+
+		<%= @type.class_name %> fromDb = <%= @type.class_name %>Provider.getFromCursor( c );
+
+		assertEquals( <%= @type.name.downcase %>Uri.getPathSegments().get(1), fromDb.get_ID() );
+	}
+
+	public void testUpdate()
+	{
+		String expectedTitle = "updated title";
+
+		ContentResolver r = getMockContentResolver();
+		<%= @type.class_name %> <%= @type.name.downcase %> = create<%= @type.class_name %>();
+
+		Uri editionUri = r.insert( <%= @type.class_name %>Provider.CONTENT_URI, <%= @type.class_name %>Provider.getValues( <%= @type.name.downcase %> ) );
+		<%= @type.name.downcase %>.set_ID( Integer.parseInt( editionUri.getPathSegments().get( 1 ) ) );
+
+		//  TODO: change some value
+		// <%= @type.name.downcase %>.setTitle( expectedTitle );
+
+		int count = r.update( editionUri, <%= @type.class_name %>Provider.getValues( <%= @type.name.downcase %> ), null, null );
+
+		assertEquals( 1, count );
+
+		Cursor c = r.query( editionUri, null, null, null, null );
+		assertEquals( 1, c.getCount() );
+		assertTrue( c.moveToFirst() );
+
+		<%= @type.class_name %> fromDb = <%= @type.class_name %>Provider.getFromCursor( c );
+
+		// TODO make sure it's changed.
+		//assertEquals( expectedTitle, fromDb.Title );
+
+		assertNotNull( fromDb.getModified() );
+	}
 }
