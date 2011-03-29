@@ -83,7 +83,7 @@ public class <%= @type.class_name %>ProviderTest extends ProviderTestCase2<<%= @
 
 		<%= @type.class_name %> fromDb = <%= @type.class_name %>Provider.getFromCursor( c );
 
-		assertEquals( <%= @type.name.downcase %>Uri.getPathSegments().get(1), fromDb.get_ID() );
+		assertEquals( <%= @type.name.downcase %>Uri.getPathSegments().get(1), fromDb.get_ID().toString() );
 	}
 
 	public void testUpdate()
