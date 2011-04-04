@@ -1,0 +1,7 @@
+Ext.regModel('<%= @type.class_name %>', {
+    fields: [
+		<% @type.fields.each do |f| %>
+		{name: '<%= f.type %>', type: '<%= f.name.downcase %>'},
+		<% end %>
+    ],
+});
