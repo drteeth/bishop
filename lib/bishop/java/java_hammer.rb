@@ -6,10 +6,10 @@ module Bishop
         @xsd_dir = File.expand_path(File.dirname(options[:file]))
         @namespace = options[:package]
         @output_folder = options[:output]
-        @provider_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/content-provider.java.erb')))
-        @dto_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/dto.java.erb')))
-        @sencha_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/model.sencha.js.erb')))
-        @test_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../templates/test.java.erb')))
+        @provider_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../../templates/content-provider.java.erb')))
+        @dto_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../../templates/dto.java.erb')))
+        @sencha_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../../templates/model.sencha.js.erb')))
+        @test_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../../templates/test.java.erb')))
         @pattern_map = PatternMap.new
       end    
 

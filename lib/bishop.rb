@@ -33,9 +33,12 @@ module Bishop
       
       h = XsdParser.new
       xsd_types = h.parse(args.value(:file))
+      
+      generators = [Sencha::SenchaHammer.new(args.to_options), Java::JavaHammer.new(args.to_options)]
 
-      generator = Sencha::SenchaHammer.new( args.to_options )
-      generator.generate( xsd_types )
+      generators.each do |g|
+        g.generate( xsd_types )
+      end
     end
   end
 end

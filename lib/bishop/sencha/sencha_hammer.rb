@@ -17,15 +17,15 @@ module Bishop
           # create a java class
           m = Model.new( xsd_type[:name] )
           m.fields = xsd_type[:fields].collect do |xsd_field|
-            java_field = JavaField.new( xsd_field[:name] )
+            f = Field.new( xsd_field[:name] )
 
-            java_field.type = get_type(xsd_field[:type])
-            java_field.minOccurs = xsd_field[:minOccurs]
-            java_field.nillable = xsd_field[:nillable]
+            f.type = get_type(xsd_field[:type])
+            f.minOccurs = xsd_field[:minOccurs]
+            f.nillable = xsd_field[:nillable]
 
-            java_field.is_primitive = m.is_primitive( java_field.type )
+            f.is_primitive = m.is_primitive( f.type )
 
-            java_field
+            f
           end
         
           # set the type field for the template
