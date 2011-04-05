@@ -33,9 +33,9 @@ module Bishop
           java_field
         end
         
-        java_class.fields << create_id_field
-        java_class.fields << create_created_field
-        java_class.fields << create_modified_field
+        # java_class.fields << create_id_field
+        # java_class.fields << create_created_field
+        # java_class.fields << create_modified_field
         
         # TODO create an sql table
         # sql_table = SqlTable.new( sql_type( xsd_type.type ) )
@@ -54,7 +54,7 @@ module Bishop
     
     def write_file( filename, contents )
       filename = filename.gsub('.','/')
-      output_file = "#{@output_folder}/#{filename}.java"
+      output_file = "#{@output_folder}/#{filename}.js"
       dir = File.dirname(output_file)
 
       FileUtils.mkdir_p dir
