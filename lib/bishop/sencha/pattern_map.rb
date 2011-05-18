@@ -9,11 +9,11 @@ module Bishop
         @patterns[:tns] << Pattern.new(/(\w+)/, "%s", :interplolate)
 
         @patterns[:xs] = []
-        @patterns[:xs] << Pattern.new(/boolean/, "Boolean")
-        @patterns[:xs] << Pattern.new(/string/, "String")
-        @patterns[:xs] << Pattern.new(/int/, "Integer")
-        @patterns[:xs] << Pattern.new(/string/, "Date")
-        @patterns[:xs] << Pattern.new(/anyURI/, "String")
+        @patterns[:xs] << Pattern.new(/boolean/, "boolean")
+        @patterns[:xs] << Pattern.new(/string/, "string")
+        @patterns[:xs] << Pattern.new(/int/, "int")
+        @patterns[:xs] << Pattern.new(/dateTime/, "Date")
+        @patterns[:xs] << Pattern.new(/anyURI/, "string")
       end
 
       def replace(namespace, typeName)

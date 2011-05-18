@@ -6,7 +6,7 @@ module Bishop
       def initialize( name )
         @name = name
         @fields = []
-        @primitives = %W( Boolean String int Integer long Long Date )
+        @primitives = %W( boolean string int long Date )
       end
       
       def class_name
