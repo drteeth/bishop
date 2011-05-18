@@ -5,23 +5,21 @@ import java.util.Date;
 
 public class <%= @type.class_name %>
 {
-	public <%= @type.name %>() 
-	{}
 
-	<% @type.fields.each do |f| %>
-		private <%= f.type %> m_<%= f.name %>;
-	<% end %>
+  <% @type.fields.each do |f| %>
+    private <%= f.type %> m_<%= f.name %>;
+  <% end %>
 
-	<% @type.fields.each do |f| %>
-	public <%= f.type %> get<%= f.name %>()
-	{
-		return m_<%= f.name %>;
-	}
+  <% @type.fields.each do |f| %>
+  public <%= f.type %> get<%= f.name %>()
+  {
+    return m_<%= f.name %>;
+  }
 
-	public void set<%= f.name %>( <%= f.type %> value )
-	{
-		m_<%= f.name %> = value;
-	}
-	<% end %>
+  public void set<%= f.name %>( <%= f.type %> value )
+  {
+    m_<%= f.name %> = value;
+  }
+  <% end %>
 
 }

@@ -20,37 +20,37 @@ import <%= @namespace %>.model.<%= @type.class_name %>;
 
 public class <%= @type.class_name %>Provider extends ContentProvider
 {
-	public <%= @type.name %>Provider() 
-	{}
-	
-	public static final String AUTHORITY = "<%= @namespace %>.provider.<%= @type.name %>";
-	public static final String DATABASE_TABLE = "<%= @type.pluralize.downcase %>";
-	public static final int ITEMS = 1;
-	public static final int ITEM_ID = 2;
+  public <%= @type.name %>Provider() 
+  {}
 
-	public static final Uri CONTENT_URI = Uri.parse( "content://" + AUTHORITY + "/<%= @type.names.downcase %>" );
-	
-	public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.<%= @namespace %>.<%= @type.name.downcase %>";
-	public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.<%= @namespace %>.<%= @type.name.downcase %>";
-	
-	public static final String DEFAULT_SORT_ORDER = "modified DESC";
-	
-	private SQLiteDatabase m_database;
+  public static final String AUTHORITY = "<%= @namespace %>.provider.<%= @type.name %>";
+  public static final String DATABASE_TABLE = "<%= @type.pluralize.downcase %>";
+  public static final int ITEMS = 1;
+  public static final int ITEM_ID = 2;
 
-	private static final UriMatcher uriMatcher;
+  public static final Uri CONTENT_URI = Uri.parse( "content://" + AUTHORITY + "/<%= @type.names.downcase %>" );
 
-	static
-	{
-		uriMatcher = new UriMatcher( UriMatcher.NO_MATCH );
-		uriMatcher.addURI( AUTHORITY, <%= @type.name %>Provider.DATABASE_TABLE, <%= @type.name %>Provider.ITEMS );
-		uriMatcher.addURI( AUTHORITY, <%= @type.name %>Provider.DATABASE_TABLE + "/#", <%= @type.name %>Provider.ITEM_ID );
-	}
-	
-	public static class Columns implements BaseColumns
-	{
-		<% @type.primitive_fields.each do |f| %>
-		public static final String <%= f.name.upcase %> = "<%= f.col_name %>";
-		<% end %>
+  public static final String CONTENT_TYPE = "vnd.android.cursor.dir/vnd.<%= @namespace %>.<%= @type.name.downcase %>";
+  public static final String CONTENT_ITEM_TYPE = "vnd.android.cursor.item/vnd.<%= @namespace %>.<%= @type.name.downcase %>";
+
+  public static final String DEFAULT_SORT_ORDER = "modified DESC";
+
+  private SQLiteDatabase m_database;
+
+  private static final UriMatcher uriMatcher;
+
+  static
+  {
+    uriMatcher = new UriMatcher( UriMatcher.NO_MATCH );
+    uriMatcher.addURI( AUTHORITY, <%= @type.name %>Provider.DATABASE_TABLE, <%= @type.name %>Provider.ITEMS );
+    uriMatcher.addURI( AUTHORITY, <%= @type.name %>Provider.DATABASE_TABLE + "/#", <%= @type.name %>Provider.ITEM_ID );
+  }
+
+  public static class Columns implements BaseColumns
+  {
+    <% @type.primitive_fields.each do |f| %>
+    public static final String <%= f.name.upcase %> = "<%= f.col_name %>";
+  <% end %>
 	}
 	
 	public static ContentValues getValues( <%= @type.name %> _<%= @type.name.downcase %> )
