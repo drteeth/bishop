@@ -20,7 +20,7 @@ module Bishop
     def parse
       opts = Trollop::options do
         opt :file, ".xsd file to load", :type => :string
-        opt :package, "java output package (com.example.providers)", :type => :string, :default => "com.example.providers"
+        opt :package, "authority (com.example)", :type => :string, :default => "com.example"
         opt :output, "output folder path", :type => :string, :default => "./generated/"
       end
 

@@ -5,12 +5,18 @@ require 'trollop'
 require 'active_support/inflector'
 
 require 'bishop/args'
-require 'bishop/java_field'
-require 'bishop/java_class'
 require 'bishop/xsd_parser'
 require 'bishop/pattern'
-require 'bishop/pattern_map'
-require 'bishop/java_hammer'
+
+require 'bishop/java/pattern_map'
+require 'bishop/java/java_hammer'
+require 'bishop/java/java_field'
+require 'bishop/java/java_class'
+
+require 'bishop/sencha/pattern_map'
+require 'bishop/sencha/sencha_hammer'
+require 'bishop/sencha/field'
+require 'bishop/sencha/model'
 
 module Bishop
   DEBUG = true
@@ -27,9 +33,12 @@ module Bishop
       
       h = XsdParser.new
       xsd_types = h.parse(args.value(:file))
+      
+      generators = [Sencha::SenchaHammer.new(args.to_options), Java::JavaHammer.new(args.to_options)]
 
-      java_generator = JavaHammer.new( args.to_options )
-      java_generator.generate( xsd_types )
+      generators.each do |g|
+        g.generate( xsd_types )
+      end
     end
   end
 end
