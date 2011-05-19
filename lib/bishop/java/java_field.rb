@@ -13,6 +13,13 @@ module Bishop
           'boolean|string' => '%s.toString()',
           'string|boolean' => 'Boolean.valueOf( %s )',
         }
+        @default_map = {
+          "boolean" => "false",
+          "string" => '""',
+          "int" => "-1",
+          "integer" => "-1",
+          "long" => "(long) -1" # find something better for this...
+        }
       end
 
       def pluralize
@@ -32,6 +39,11 @@ module Bishop
         # Integer -> int
         # Boolean -> int
         @pattern_map.replace(:java_primitives, type) || type
+      end
+
+      def default
+        return @default_map[ type.downcase ] if @default_map.has_key? type.downcase
+        return "new #{type}()"
       end
 
       def convert_to_primitive( value_expression )

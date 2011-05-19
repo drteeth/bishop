@@ -20,7 +20,7 @@ require 'bishop/sencha/model'
 
 module Bishop
   DEBUG = true
-  
+
   class Application
     def run
       args = Args.new
@@ -30,11 +30,12 @@ module Bishop
         puts "usage: bishop -f <xsd> -p <package> -o <output folder>"
         exit(-1)
       end
-      
+
       h = XsdParser.new
       xsd_types = h.parse(args.value(:file))
-      
-      generators = [Sencha::SenchaHammer.new(args.to_options), Java::JavaHammer.new(args.to_options)]
+
+      # Sencha::SenchaHammer.new(args.to_options)
+      generators = [Java::JavaHammer.new(args.to_options)]
 
       generators.each do |g|
         g.generate( xsd_types )

@@ -1,11 +1,11 @@
 Ext.regModel('<%= @type.name %>', {
     fields: [
-	<% @type.primitive_fields.each do |f| %>{name: '<%= f.name %>', type: '<%= f.type %>'},
-	<% end %>
-	],
-		
-	associations: [	        
-	<% @type.complex_fields.each do |f| %>{type: 'hasMany', model: '<%= f.type %>', name: '<%= f.name %>'},
-	<% end %>
-	]
+  <% @type.primitive_fields.each do |f| %>{name: '<%= f.name %>', type: '<%= f.type %>'},
+  <% end %>
+  ],
+
+  associations: [
+  <% @type.complex_fields.each do |f| %>{type: 'hasMany', model: '<%= f.type %>', name: '<%= f.name %>'},
+  <% end %>
+  ]
 });

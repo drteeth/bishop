@@ -10,9 +10,10 @@ module Bishop
         @dto_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../../templates/dto.java.erb')))
         @test_template = ERB.new(File.read(File.join( File.dirname(__FILE__), '../../../templates/test.java.erb')))
         @pattern_map = PatternMap.new
-      end    
+      end
 
       def generate( xsd_types )
+        
         xsd_types.each do |xsd_type|
           next if xsd_type[:name] =~ /^ArrayOf/
 
@@ -20,6 +21,7 @@ module Bishop
 
           # create a java class
           java_class = JavaClass.new( xsd_type[:name] )
+          
           java_class.fields = xsd_type[:fields].collect do |xsd_field|
             java_field = JavaField.new( xsd_field[:name] )
 
@@ -32,10 +34,10 @@ module Bishop
 
             java_field
           end
-
-          # java_class.fields << create_id_field
-          # java_class.fields << create_created_field
-          # java_class.fields << create_modified_field
+          
+          java_class.fields << create_id_field unless java_class.has_id?
+          java_class.fields << create_created_field
+          java_class.fields << create_modified_field
 
           # TODO create an sql table
           # sql_table = SqlTable.new( sql_type( xsd_type.type ) )
@@ -64,9 +66,9 @@ module Bishop
         end
       end
 
-      def create_id_field()
+      def create_id_field
         # add ID field
-        id = JavaField.new( "_ID" )
+        id = JavaField.new( 'ID' )
         id.type = "Integer"
         id.minOccurs = "1";
         id.nillable = "false"

@@ -18,10 +18,8 @@ import android.util.Log;
 
 import <%= @namespace %>.model.<%= @type.class_name %>;
 
-public class <%= @type.class_name %>Provider extends ContentProvider
-{
-  public <%= @type.name %>Provider() 
-  {}
+public class <%= @type.class_name %>Provider extends ContentProvider {
+  public <%= @type.name %>Provider() {}
 
   public static final String AUTHORITY = "<%= @namespace %>.provider.<%= @type.name %>";
   public static final String DATABASE_TABLE = "<%= @type.pluralize.downcase %>";
@@ -39,168 +37,147 @@ public class <%= @type.class_name %>Provider extends ContentProvider
 
   private static final UriMatcher uriMatcher;
 
-  static
-  {
+  static {
     uriMatcher = new UriMatcher( UriMatcher.NO_MATCH );
     uriMatcher.addURI( AUTHORITY, <%= @type.name %>Provider.DATABASE_TABLE, <%= @type.name %>Provider.ITEMS );
     uriMatcher.addURI( AUTHORITY, <%= @type.name %>Provider.DATABASE_TABLE + "/#", <%= @type.name %>Provider.ITEM_ID );
   }
 
-  public static class Columns implements BaseColumns
-  {
+  public static class Columns implements BaseColumns {
+    <% @type.primitive_fields.each do |f| %>public static final String <%= f.name.upcase %> = "<%= f.col_name %>";
+    <% end %>
+  }
+
+  public static ContentValues getValues( <%= @type.name %> _<%= @type.name.downcase %> ) {
+    ContentValues values = new ContentValues();
+
+    <% @type.primitive_fields.each do |f| %>values.put( <%= @type.name %>Provider.Columns.<%= f.name.upcase %>, <%= f.convert_to_primitive( "_#{@type.name.downcase}.get#{f.name}()" ) %> );
+    <% end %>
+
+    return values;
+  }
+
+  public static <%= @type.name %> getFromCursor( Cursor c ) {
+    <%= @type.name %> <%= @type.name.downcase %> = new <%= @type.name %>();
+
     <% @type.primitive_fields.each do |f| %>
-    public static final String <%= f.name.upcase %> = "<%= f.col_name %>";
-  <% end %>
-	}
-	
-	public static ContentValues getValues( <%= @type.name %> _<%= @type.name.downcase %> )
-	{
-		ContentValues values = new ContentValues();
-		
-		<% @type.primitive_fields.each do |f| %>
-		values.put( <%= @type.name %>Provider.Columns.<%= f.name.upcase %>, <%= f.convert_to_primitive( "_#{@type.name.downcase}.get#{f.name}()" ) %> );
-		<% end %>
-		
-		return values;
-	}
-	
-	public static <%= @type.name %> getFromCursor( Cursor c )
-	{
-		<%= @type.name %> <%= @type.name.downcase %> = new <%= @type.name %>();
-		
-		<% @type.primitive_fields.each do |f| %>
-		<%= "#{f.get_primitive_substitute} _#{f.name.downcase} = c.get#{f.get_primitive_substitute.capitalize}( c.getColumnIndex( #{@type.name}Provider.Columns.#{f.name.upcase} ) );" %>
-		<%= @type.name.downcase %>.set<%= f.name %>( <%= f.upcast( "_#{f.name.downcase}" ) %> );
-		<% end %>
-		
-		<% @type.complex_fields.each do |f| %>		
-		//<%= @type.name.downcase %>.<%= f.name %> = c.get<%= f.type.capitalize %>( c.getColumnIndex( <%= @type.name %>.Columns.<%= f.name.upcase %> ) );
-		<% end %>
-		
-		return <%= @type.name.downcase %>;
-	}
-	
-	@Override
-	public int delete( Uri uri, String selection, String[] selectionArgs )
-	{
-		int count = 0;
-		switch( uriMatcher.match( uri ) )
-		{
-			case <%= @type.name %>Provider.ITEMS:
-				count = m_database.delete( <%= @type.name %>Provider.DATABASE_TABLE, selection, selectionArgs );
-				break;
-			case <%= @type.name %>Provider.ITEM_ID:
-				String id = uri.getPathSegments().get( 1 );
-				count = m_database.delete( <%= @type.name %>Provider.DATABASE_TABLE, <%= @type.name %>Provider.Columns._ID + " = " + id
-						+ ( !TextUtils.isEmpty( selection ) ? " AND (" + selection + ')' : "" ), selectionArgs );
-				break;
-			default:
-				throw new IllegalArgumentException( "Unknown URI " + uri );
-		}
-		getContext().getContentResolver().notifyChange( uri, null );
-		return count;
-	}
+    <%= "#{f.get_primitive_substitute} _#{f.name.downcase} = c.get#{f.get_primitive_substitute.capitalize}( c.getColumnIndex( #{@type.name}Provider.Columns.#{f.name.upcase} ) );" %>
+    <%= @type.name.downcase %>.set<%= f.name %>( <%= f.upcast( "_#{f.name.downcase}" ) %> );
+    <% end %>
 
-	@Override
-	public String getType( Uri uri )
-	{
-		switch( uriMatcher.match( uri ) )
-		{
-			case <%= @type.name %>Provider.ITEMS:
-				return <%= @type.name %>Provider.CONTENT_TYPE;
-			case <%= @type.name %>Provider.ITEM_ID:
-				return <%= @type.name %>Provider.CONTENT_ITEM_TYPE;
-			default:
-				throw new IllegalArgumentException( "Unsupported URI: " + uri );
-		}
-	}
+    <% @type.complex_fields.each do |f| %>
+    //<%= @type.name.downcase %>.<%= f.name %> = c.get<%= f.type.capitalize %>( c.getColumnIndex( <%= @type.name %>.Columns.<%= f.name.upcase %> ) );
+    <% end %>
 
-	@Override
-	public Uri insert( Uri uri, ContentValues values )
-	{
-		// set the created and modified times
-		Long now = System.currentTimeMillis();
-		values.put( <%= @type.name %>Provider.Columns.CREATED, now );
-		values.put( <%= @type.name %>Provider.Columns.MODIFIED, now );
-				
-		long rowID = m_database.insert( <%= @type.name %>Provider.DATABASE_TABLE, "", values );
-		if( rowID > 0 )
-		{
-			Uri _uri = ContentUris.withAppendedId( CONTENT_URI, rowID );
-			getContext().getContentResolver().notifyChange( _uri, null );
-			return _uri;
-		}
+    return <%= @type.name.downcase %>;
+  }
 
-		throw new UnsupportedOperationException( "Failled to insert: " + uri.toString() );
-	}
+  @Override
+  public int delete( Uri uri, String selection, String[] selectionArgs ) {
+    int count = 0;
+    switch( uriMatcher.match( uri ) ) {
+      case <%= @type.name %>Provider.ITEMS:
+        count = m_database.delete( <%= @type.name %>Provider.DATABASE_TABLE, selection, selectionArgs );
+        break;
+      case <%= @type.name %>Provider.ITEM_ID:
+        String id = uri.getPathSegments().get( 1 );
+        count = m_database.delete( <%= @type.name %>Provider.DATABASE_TABLE, <%= @type.name %>Provider.Columns._ID + " = " + id
+            + ( !TextUtils.isEmpty( selection ) ? " AND (" + selection + ')' : "" ), selectionArgs );
+        break;
+      default:
+        throw new IllegalArgumentException( "Unknown URI " + uri );
+    }
+    getContext().getContentResolver().notifyChange( uri, null );
+    return count;
+  }
 
-	@Override
-	public boolean onCreate()
-	{
-		Context context = getContext();
-		SQLiteConnectionManager dbHelper = new SQLiteConnectionManager( context );
-		m_database = dbHelper.getWritableDatabase();
-		return ( m_database != null );
-	}
+  @Override
+  public String getType( Uri uri ) {
+    switch( uriMatcher.match( uri ) ) {
+      case <%= @type.name %>Provider.ITEMS:
+        return <%= @type.name %>Provider.CONTENT_TYPE;
+      case <%= @type.name %>Provider.ITEM_ID:
+        return <%= @type.name %>Provider.CONTENT_ITEM_TYPE;
+      default:
+        throw new IllegalArgumentException( "Unsupported URI: " + uri );
+    }
+  }
 
-	@Override
-	public Cursor query( Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder )
-	{
-		SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
-		sqlBuilder.setTables( <%= @type.name %>Provider.DATABASE_TABLE );
-		if( uriMatcher.match( uri ) == <%= @type.name %>Provider.ITEM_ID )
-			sqlBuilder.appendWhere( Columns._ID + " = " + uri.getPathSegments().get( 1 ) );
-		Cursor c = sqlBuilder.query( m_database, projection, selection, selectionArgs, null, null, sortOrder );
-		c.setNotificationUri( getContext().getContentResolver(), uri );
-		return c;
-	}
+  @Override
+  public Uri insert( Uri uri, ContentValues values ) {
+    // set the created and modified times
+    Long now = System.currentTimeMillis();
+    values.put( <%= @type.name %>Provider.Columns.CREATED, now );
+    values.put( <%= @type.name %>Provider.Columns.MODIFIED, now );
 
-	@Override
-	public int update( Uri uri, ContentValues values, String selection, String[] selectionArgs )
-	{
-		values.put( <%= @type.name %>Provider.Columns.MODIFIED, System.currentTimeMillis() );
-		int count = 0;
-		switch( uriMatcher.match( uri ) )
-		{
-			case <%= @type.name %>Provider.ITEMS:
-				count = m_database.update( <%= @type.name %>Provider.DATABASE_TABLE, values, selection, selectionArgs );
-				break;
+    long rowID = m_database.insert( <%= @type.name %>Provider.DATABASE_TABLE, "", values );
+    if( rowID > 0 )
+    {
+      Uri _uri = ContentUris.withAppendedId( CONTENT_URI, rowID );
+      getContext().getContentResolver().notifyChange( _uri, null );
+      return _uri;
+    }
 
-			case <%= @type.name %>Provider.ITEM_ID:
-				count = m_database.update( <%= @type.name %>Provider.DATABASE_TABLE, values, Columns._ID + " = " + uri.getPathSegments().get( 1 )
-						+ ( !TextUtils.isEmpty( selection ) ? " AND (" + selection + ')' : "" ), selectionArgs );
-				break;
-			default:
-				throw new IllegalArgumentException( "Unknown URI " + uri );
-		}
-		getContext().getContentResolver().notifyChange( uri, null );
+    throw new UnsupportedOperationException( "Failled to insert: " + uri.toString() );
+  }
 
-		return count;
-	}
-	
-	public class SQLiteConnectionManager extends SQLiteOpenHelper
-	{
+  @Override
+  public boolean onCreate() {
+    Context context = getContext();
+    SQLiteConnectionManager dbHelper = new SQLiteConnectionManager( context );
+    m_database = dbHelper.getWritableDatabase();
+    return ( m_database != null );
+  }
 
-		private static final String DATABASENAME = "todo.db";
-		private static final int DATABASE_VERSION = 1;
-		private static final String CREATE_TABLE = "CREATE TABLE <%= @type.name.pluralize.downcase %>( _id INTEGER NOT NULL CONSTRAINT USER_PK PRIMARY KEY AUTOINCREMENT, <%= @type.primitive_fields.reject{ |f| f.name == '_ID' }.map{ |f| "#{f.col_name} #{f.sql_type}" }.join(', ') %> )";
+  @Override
+  public Cursor query( Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder ) {
+    SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
+    sqlBuilder.setTables( <%= @type.name %>Provider.DATABASE_TABLE );
+    if( uriMatcher.match( uri ) == <%= @type.name %>Provider.ITEM_ID ) {
+      sqlBuilder.appendWhere( Columns._ID + " = " + uri.getPathSegments().get( 1 ) );
+    }
+    Cursor c = sqlBuilder.query( m_database, projection, selection, selectionArgs, null, null, sortOrder );
+    c.setNotificationUri( getContext().getContentResolver(), uri );
+    return c;
+  }
 
-		public SQLiteConnectionManager( Context context )
-		{
-			super( context, DATABASENAME, null, DATABASE_VERSION );
-		}
-		
-		@Override
-		public void onCreate( SQLiteDatabase db )
-		{
-			db.execSQL( CREATE_TABLE );
-			Log.d( "@G SQLConnectionFactory", " CREATE_LEADSOURCE Table " );
-		}
-		
-		@Override
-		public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion )
-		{
-		}
-	}
-	
+  @Override
+  public int update( Uri uri, ContentValues values, String selection, String[] selectionArgs ) {
+    values.put( <%= @type.name %>Provider.Columns.MODIFIED, System.currentTimeMillis() );
+    int count = 0;
+    switch( uriMatcher.match( uri ) ) {
+      case <%= @type.name %>Provider.ITEMS:
+        count = m_database.update( <%= @type.name %>Provider.DATABASE_TABLE, values, selection, selectionArgs );
+        break;
+      case <%= @type.name %>Provider.ITEM_ID:
+        count = m_database.update( <%= @type.name %>Provider.DATABASE_TABLE, values, Columns._ID + " = " + uri.getPathSegments().get( 1 ) 
+            + ( !TextUtils.isEmpty( selection ) ? " AND (" + selection + ')' : "" ), selectionArgs );
+        break;
+      default:
+        throw new IllegalArgumentException( "Unknown URI " + uri );
+    }
+    getContext().getContentResolver().notifyChange( uri, null );
+
+    return count;
+  }
+
+  public class SQLiteConnectionManager extends SQLiteOpenHelper {
+    private static final String DATABASENAME = "todo.db";
+    private static final int DATABASE_VERSION = 1;
+    private static final String CREATE_TABLE = "CREATE TABLE <%= @type.name.pluralize.downcase %>( _id INTEGER NOT NULL CONSTRAINT USER_PK PRIMARY KEY AUTOINCREMENT, <%= @type.primitive_fields.reject{ |f| f.name == '_ID' }.map{ |f| "#{f.col_name} #{f.sql_type}" }.join(', ') %> )";
+
+    public SQLiteConnectionManager( Context context ) {
+      super( context, DATABASENAME, null, DATABASE_VERSION );
+    }
+
+    @Override
+    public void onCreate( SQLiteDatabase db ) {
+      db.execSQL( CREATE_TABLE );
+      Log.d( "@G SQLConnectionFactory", " CREATE_LEADSOURCE Table " );
+    }
+
+    @Override
+    public void onUpgrade( SQLiteDatabase db, int oldVersion, int newVersion ) {}
+  }
+
 }

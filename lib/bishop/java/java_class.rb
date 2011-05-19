@@ -16,7 +16,15 @@ module Bishop
       def setter
         "set#{name}( #{type} #{} )"
       end
-
+      
+      def has_id?
+        @fields.each do |f|
+          return true if f.name.downcase == "id"
+        end
+        
+        false
+      end
+      
       def class_name
         ActiveSupport::Inflector.camelize( name )
       end
