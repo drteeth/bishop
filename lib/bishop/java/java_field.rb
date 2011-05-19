@@ -27,7 +27,7 @@ module Bishop
       end
 
       def col_name
-        name.downcase
+        @col_name || name.downcase
       end
 
       def fk_name

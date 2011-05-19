@@ -6,100 +6,88 @@ import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.test.ProviderTestCase2;
-import android.test.mock.MockContentResolver;
 
 import <%= @namespace %>.model.<%= @type.class_name %>;
 import <%= @namespace %>.provider.<%= @type.class_name %>Provider;
 
-public class <%= @type.class_name %>ProviderTest extends ProviderTestCase2<<%= @type.class_name %>Provider> {
+public abstract class <%= @type.class_name %>ProviderTestBase extends ProviderTestCase2<<%= @type.class_name %>Provider> {
 
-  public <%= @type.class_name %>ProviderTest() {
+  public <%= @type.class_name %>ProviderTestBase() {
     super( <%= @type.class_name %>Provider.class, <%= @type.class_name %>Provider.AUTHORITY );
   }
-
-  private <%= @type.class_name %>Provider <%= @type.name.downcase %>;
-
-  @Override
-  protected void setUp() throws Exception {
-    super.setUp();
-
-    <%= @type.name.downcase %> = new <%= @type.class_name %>Provider();
-  }
-
-  @Override
-  public MockContentResolver getMockContentResolver() {
-    return super.getMockContentResolver();
-  }
-
+  
+  protected abstract void modify<%= @type.class_name %>( <%= @type.class_name %> <%= @type.name.downcase %> );
+  protected abstract boolean ensureModify( <%= @type.class_name %> <%= @type.name.downcase %> );
+  
   private <%= @type.class_name %> create<%= @type.class_name %>() {
     <%= @type.class_name %> <%= @type.name.downcase %> = new <%= @type.class_name %>();
     return <%= @type.name.downcase %>;
   }
-
-  public void testPreconditions() {
-    assertNotNull( <%= @type.name.downcase %> );
+  
+  public void testEquals() {
+    <%= @type.class_name %> expected = create<%= @type.class_name %>();
+    <%= @type.class_name %> actual = expected;
+    
+    assertTrue( actual.equals( expected ) );
   }
 
   public void testInsertNew() {
-     ContentResolver db = getMockContentResolver();
-    <%= @type.class_name %> <%= @type.name.downcase %> = create<%= @type.class_name %>();
-    Uri new<%= @type.class_name %>Uri = db.insert( <%= @type.class_name %>Provider.CONTENT_URI, <%= @type.class_name %>Provider.getValues( <%= @type.name.downcase %> ) );
+    // create a new object
+    <%= @type.class_name %> expected = create<%= @type.class_name %>();
 
+    // save it
+    Uri new<%= @type.class_name %>Uri = getProvider().insert( expected );
     assertNotNull( new<%= @type.class_name %>Uri );
 
     // get it from the database
-    Cursor c = db.query( new<%= @type.class_name %>Uri, null, null, null, null );
+    Cursor c = getProvider().query( new<%= @type.class_name %>Uri );
     assertEquals( 1, c.getCount() );
     assertTrue( c.moveToFirst() );
 
-    <%= @type.name.downcase %> = <%= @type.class_name %>Provider.getFromCursor( c );
+    <%= @type.class_name %> actual = <%= @type.class_name %>Provider.getFromCursor( c );
 
-    assertNotNull( <%= @type.name.downcase %> );
-    assertNotNull( <%= @type.name.downcase %>.getID() );
-    assertNotNull( <%= @type.name.downcase %>.getCreated() );
-    assertNotNull( <%= @type.name.downcase %>.getModified() );
+    assertNotNull( actual );
+    assertNotNull( actual.getID() );
+    assertNotNull( actual.getCreated() );
+    assertNotNull( actual.getModified() );
+    
+    assertEquals( expected, actual );
   }
 
   public void testQuery()
-  {
-    ContentResolver db = getMockContentResolver();
-    <%= @type.class_name %> <%= @type.name.downcase %> = create<%= @type.class_name %>();
+  {    
+    // put a new <%= @type.name.downcase %> in the database
+    <%= @type.class_name %> expected = create<%= @type.class_name %>();
+    Uri new<%= @type.class_name %>Uri = getProvider().insert( expected );
 
-    Uri <%= @type.name.downcase %>Uri = db.insert( <%= @type.class_name %>Provider.CONTENT_URI, <%= @type.class_name %>Provider.getValues( <%= @type.name.downcase %> ) );
-
-    Cursor c = db.query( <%= @type.name.downcase %>Uri, null, null, null, null );
+    // get it back
+    Cursor c = getProvider().query( new<%= @type.class_name %>Uri );
     assertEquals( 1, c.getCount() );
     assertTrue( c.moveToFirst() );
+    <%= @type.class_name %> actual = <%= @type.class_name %>Provider.getFromCursor( c );
 
-    <%= @type.class_name %> fromDb = <%= @type.class_name %>Provider.getFromCursor( c );
-
-    assertEquals( <%= @type.name.downcase %>Uri.getPathSegments().get(1), fromDb.getID().toString() );
+    assertEquals( expected, actual );
   }
 
   public void testUpdate() {
-    String expectedTitle = "updated title";
-
-    ContentResolver db = getMockContentResolver();
     <%= @type.class_name %> <%= @type.name.downcase %> = create<%= @type.class_name %>();
 
-    Uri editionUri = db.insert( <%= @type.class_name %>Provider.CONTENT_URI, <%= @type.class_name %>Provider.getValues( <%= @type.name.downcase %> ) );
-    <%= @type.name.downcase %>.setID( Integer.parseInt( editionUri.getPathSegments().get( 1 ) ) );
+    Uri <%= @type.name.downcase %>Uri = getProvider().insert( <%= @type.name.downcase %> );
 
-    //  TODO: change some value
-    // <%= @type.name.downcase %>.setTitle( expectedTitle );
+    // make a change
+    modify<%= @type.class_name %>( <%= @type.name.downcase %> );
 
-    int count = db.update( editionUri, <%= @type.class_name %>Provider.getValues( <%= @type.name.downcase %> ), null, null );
-
+    int count = getProvider().update( <%= @type.name.downcase %> );
     assertEquals( 1, count );
 
-    Cursor c = db.query( editionUri, null, null, null, null );
+    Cursor c = getProvider().query( <%= @type.name.downcase %>Uri );
     assertEquals( 1, c.getCount() );
     assertTrue( c.moveToFirst() );
 
     <%= @type.class_name %> fromDb = <%= @type.class_name %>Provider.getFromCursor( c );
 
-    // TODO make sure it's changed.
-    //assertEquals( expectedTitle, fromDb.Title );
+    // did our changes stick?
+    assertTrue( ensureModify( <%= @type.name.downcase %> ) );
 
     assertNotNull( fromDb.getModified() );
   }

@@ -31,6 +31,8 @@ module Bishop
 
             java_field.is_primitive = java_class.is_primitive( java_field.type )
             java_field.sql_type = get_sql_type( java_field.type )
+            
+            java_field.col_name = "_id" if xsd_field[:name].downcase == "id"
 
             java_field
           end
@@ -38,6 +40,10 @@ module Bishop
           java_class.fields << create_id_field unless java_class.has_id?
           java_class.fields << create_created_field
           java_class.fields << create_modified_field
+
+          # super hack for android
+          # _id is the magic id column name
+          # hammer the id field to look like this
 
           # TODO create an sql table
           # sql_table = SqlTable.new( sql_type( xsd_type.type ) )
@@ -48,7 +54,7 @@ module Bishop
           # render the templates and write them out
           write_file( "#{@namespace}.provider.#{java_class.name}Provider", @provider_template.result(get_binding) )
           write_file( "#{@namespace}.model.#{java_class.name}", @dto_template.result(get_binding) )
-          write_file( "#{@namespace}.provider.test.#{java_class.name}ProviderTest", @test_template.result(get_binding) )
+          write_file( "#{@namespace}.provider_tests.#{java_class.name}ProviderTestBase", @test_template.result(get_binding) )
 
         end
       end
