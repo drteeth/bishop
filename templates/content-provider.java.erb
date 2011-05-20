@@ -161,9 +161,9 @@ public class <%= @type.class_name %>Provider extends ContentProvider {
     return c;
   }
   
-  public int update( Uri uri ) {
+  public int update( <%= @type.class_name %> <%= @type.name.downcase %> ) {
     ContentValues values = <%= @type.class_name %>Provider.getValues( <%= @type.name.downcase %> );
-    return update( uri, values, null, null );
+    return update( <%= @type.class_name %>Provider.CONTENT_URI, values, null, null );
   }
 
   @Override
