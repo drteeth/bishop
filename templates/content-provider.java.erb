@@ -1,6 +1,8 @@
 package <%= @namespace %>.provider;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import android.content.ContentProvider;
 import android.content.ContentUris;
@@ -72,6 +74,14 @@ public class <%= @type.class_name %>Provider extends ContentProvider {
     return <%= @type.name.downcase %>;
   }
 
+  public static Uri getUri( <%= @type.class_name %> <%= @type.name.downcase %> ) {
+    return ContentUris.withAppendedId( CONTENT_URI, <%= @type.name.downcase %>.getID() );
+  }
+
+  public int delete( <%= @type.class_name %> <%= @type.name.downcase %> ) {
+    return delete( getUri( <%= @type.name.downcase %> ), null, null );
+  }
+
   @Override
   public int delete( Uri uri, String selection, String[] selectionArgs ) {
     int count = 0;
@@ -102,7 +112,7 @@ public class <%= @type.class_name %>Provider extends ContentProvider {
         throw new IllegalArgumentException( "Unsupported URI: " + uri );
     }
   }
-  
+
   protected void removeNullIdValues( ContentValues values ) {
     if( values.containsKey( <%= @type.name %>Provider.Columns.ID ) ) {
       if( values.getAsInteger( <%= @type.name %>Provider.Columns.ID ) < 0 ) {
@@ -110,7 +120,19 @@ public class <%= @type.class_name %>Provider extends ContentProvider {
       }
     }
   }
-  
+
+  public List<Uri> insert( List<<%= @type.class_name %>> <%= @type.name.downcase %>s ) {
+    List<Uri> uris = new ArrayList<Uri>();
+    m_database.beginTransaction();
+    for( <%= @type.class_name %> e : <%= @type.name.downcase %>s ) {
+      uris.add( insert( e ) );
+    }
+    m_database.setTransactionSuccessful();
+    m_database.endTransaction();
+
+    return uris;
+  }
+
   public Uri insert( <%= @type.name %> <%= @type.name.downcase %> ) {
     Uri uri = insert( <%= @type.class_name %>Provider.CONTENT_URI, <%= @type.class_name %>Provider.getValues( <%= @type.name.downcase %> ) );
     <%= @type.name.downcase %>.setID( Integer.parseInt( uri.getPathSegments().get( 1 ) ) );
@@ -123,7 +145,7 @@ public class <%= @type.class_name %>Provider extends ContentProvider {
     Long now = System.currentTimeMillis();
     values.put( <%= @type.name %>Provider.Columns.CREATED, now );
     values.put( <%= @type.name %>Provider.Columns.MODIFIED, now );
-    
+
     removeNullIdValues(values);
 
     long rowID = m_database.insert( <%= @type.name %>Provider.DATABASE_TABLE, "", values );
@@ -144,11 +166,11 @@ public class <%= @type.class_name %>Provider extends ContentProvider {
     m_database = dbHelper.getWritableDatabase();
     return ( m_database != null );
   }
-  
+
   public Cursor query( Uri uri ) {
     return query( uri, null, null, null, null );
   }
-  
+
   @Override
   public Cursor query( Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder ) {
     SQLiteQueryBuilder sqlBuilder = new SQLiteQueryBuilder();
@@ -160,10 +182,10 @@ public class <%= @type.class_name %>Provider extends ContentProvider {
     c.setNotificationUri( getContext().getContentResolver(), uri );
     return c;
   }
-  
+
   public int update( <%= @type.class_name %> <%= @type.name.downcase %> ) {
     ContentValues values = <%= @type.class_name %>Provider.getValues( <%= @type.name.downcase %> );
-    return update( <%= @type.class_name %>Provider.CONTENT_URI, values, null, null );
+    return update( getUri( <%= @type.name.downcase %> ), values, null, null );
   }
 
   @Override
@@ -175,7 +197,7 @@ public class <%= @type.class_name %>Provider extends ContentProvider {
         count = m_database.update( <%= @type.name %>Provider.DATABASE_TABLE, values, selection, selectionArgs );
         break;
       case <%= @type.name %>Provider.ITEM_ID:
-        count = m_database.update( <%= @type.name %>Provider.DATABASE_TABLE, values, Columns._ID + " = " + uri.getPathSegments().get( 1 ) 
+        count = m_database.update( <%= @type.name %>Provider.DATABASE_TABLE, values, Columns._ID + " = " + uri.getPathSegments().get( 1 )
             + ( !TextUtils.isEmpty( selection ) ? " AND (" + selection + ')' : "" ), selectionArgs );
         break;
       default:
@@ -189,7 +211,7 @@ public class <%= @type.class_name %>Provider extends ContentProvider {
   public class SQLiteConnectionManager extends SQLiteOpenHelper {
     private static final String DATABASENAME = "todo.db";
     private static final int DATABASE_VERSION = 1;
-    
+
     private static final String CREATE_TABLE = "CREATE TABLE <%= @type.name.pluralize.downcase %>( _id INTEGER NOT NULL CONSTRAINT USER_PK PRIMARY KEY AUTOINCREMENT, <%= @type.primitive_fields.reject{ |f| f.name.downcase == 'id' }.map{ |f| "#{f.col_name} #{f.sql_type}" }.join(', ') %> )";
 
     public SQLiteConnectionManager( Context context ) {

@@ -1,8 +1,9 @@
 package <%= @namespace %>.provider.test;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
-import android.content.ContentResolver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.test.ProviderTestCase2;
@@ -15,19 +16,42 @@ public abstract class <%= @type.class_name %>ProviderTestBase extends ProviderTe
   public <%= @type.class_name %>ProviderTestBase() {
     super( <%= @type.class_name %>Provider.class, <%= @type.class_name %>Provider.AUTHORITY );
   }
-  
+
   protected abstract void modify<%= @type.class_name %>( <%= @type.class_name %> <%= @type.name.downcase %> );
   protected abstract boolean ensureModify( <%= @type.class_name %> <%= @type.name.downcase %> );
-  
+
   private <%= @type.class_name %> create<%= @type.class_name %>() {
     <%= @type.class_name %> <%= @type.name.downcase %> = new <%= @type.class_name %>();
     return <%= @type.name.downcase %>;
   }
-  
+
+  @Override
+  protected void setUp() throws Exception {
+    super.setUp();
+
+    List<<%= @type.class_name %>> <%= @type.name.downcase %>s = new ArrayList<<%= @type.class_name %>>();
+    for( int i = 0; i < 5; i++ ) {
+      // create a new object
+      <%= @type.name.downcase %>s.add( create<%= @type.class_name %>() );
+    }
+
+    List<Uri> uris = getProvider().insert( <%= @type.name.downcase %>s );
+    assertNotNull( uris );
+    assertEquals( 5, uris.size() );
+  }
+
+  public void testPrecondition() {
+    // make sure there are 5 editions in the database?
+    Cursor c = getProvider().query( <%= @type.class_name %>Provider.CONTENT_URI,
+      new String[] { <%= @type.class_name %>Provider.Columns.ID }, null, null, null );
+    assertTrue( c.moveToFirst() );
+    assertEquals( 5, c.getCount() );
+  }
+
   public void testEquals() {
     <%= @type.class_name %> expected = create<%= @type.class_name %>();
     <%= @type.class_name %> actual = expected;
-    
+
     assertTrue( actual.equals( expected ) );
   }
 
@@ -50,12 +74,12 @@ public abstract class <%= @type.class_name %>ProviderTestBase extends ProviderTe
     assertNotNull( actual.getID() );
     assertNotNull( actual.getCreated() );
     assertNotNull( actual.getModified() );
-    
+
     assertEquals( expected, actual );
   }
 
   public void testQuery()
-  {    
+  {
     // put a new <%= @type.name.downcase %> in the database
     <%= @type.class_name %> expected = create<%= @type.class_name %>();
     Uri new<%= @type.class_name %>Uri = getProvider().insert( expected );
@@ -91,4 +115,19 @@ public abstract class <%= @type.class_name %>ProviderTestBase extends ProviderTe
 
     assertNotNull( fromDb.getModified() );
   }
+
+  public void testDelete<%= @type.class_name %>() {
+    // create a new edition
+    <%= @type.class_name %> <%= @type.name.downcase %>  = create<%= @type.class_name %>();
+    Uri uri = getProvider().insert( <%= @type.name.downcase %> );
+
+    // delete it
+    int count = getProvider().delete( <%= @type.name.downcase %> );
+    assertEquals( 1, count );
+
+    // confirm that it's gone
+    Cursor c = getProvider().query( uri );
+    assertEquals( 0, c.getCount() );
+  }
+
 }

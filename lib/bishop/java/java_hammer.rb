@@ -13,7 +13,7 @@ module Bishop
       end
 
       def generate( xsd_types )
-        
+
         xsd_types.each do |xsd_type|
           next if xsd_type[:name] =~ /^ArrayOf/
 
@@ -21,7 +21,7 @@ module Bishop
 
           # create a java class
           java_class = JavaClass.new( xsd_type[:name] )
-          
+
           java_class.fields = xsd_type[:fields].collect do |xsd_field|
             java_field = JavaField.new( xsd_field[:name] )
 
@@ -31,12 +31,12 @@ module Bishop
 
             java_field.is_primitive = java_class.is_primitive( java_field.type )
             java_field.sql_type = get_sql_type( java_field.type )
-            
+
             java_field.col_name = "_id" if xsd_field[:name].downcase == "id"
 
             java_field
           end
-          
+
           java_class.fields << create_id_field unless java_class.has_id?
           java_class.fields << create_created_field
           java_class.fields << create_modified_field

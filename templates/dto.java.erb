@@ -27,9 +27,9 @@ public class <%= @type.class_name %> {
     if( o instanceof <%= @type.class_name %> == false ) {
       return false;
     }
-    
+
     <%= @type.class_name %> other = (<%= @type.class_name %>)o;
-    
+
     <% @type.fields.reject{ |a| ['created', 'modified'].include? a.name.downcase }.each do |f| %>
     if( other.get<%= f.name %>().equals( this.get<%= f.name %>() ) == false ) {
       return false;
