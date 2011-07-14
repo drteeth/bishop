@@ -1,1 +1,1 @@
-rvm use 1.9.2@bishop
+rvm use 1.9.2@bishop --create
